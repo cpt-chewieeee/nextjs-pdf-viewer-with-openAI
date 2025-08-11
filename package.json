@@ -7,7 +7,6 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-
     "db_dev:push": "npx prisma db push"
   },
   "dependencies": {
