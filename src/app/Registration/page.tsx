@@ -1,16 +1,39 @@
 "use client";
 import { onSubmitEventCallback } from '../types/functions'
 import { validateForm } from '../helpers/formHelper';
+import { signIn } from 'next-auth/react';
+import { redirect, useRouter } from "next/navigation";
 
 
 
 export default function Registration() {
-
-  const handleSubmit: onSubmitEventCallback = (event: React.FormEvent<HTMLFormElement>) => {
+  const router = useRouter();
+  const handleSubmit: onSubmitEventCallback = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
    
 
     validateForm();
+
+    try {
+      const formData = new FormData(event.currentTarget);
+      const signInResult = await signIn("credentials", {
+        ...Object.fromEntries(formData),
+        redirect: false,
+      });
+
+      if(signInResult?.error) {
+       
+        return;
+      }
+
+
+      // redirect('/dashboard')
+      router.push('/dashboard');
+      router.refresh();
+    } catch(err) {
+
+    }
+
   } 
   return (
     <div className="flex overflow-hidden flex-col xl:h-full h-screen items-center justify-center gap-5 xl:gap-6 xl:w-[50%] mx-auto">

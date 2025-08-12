@@ -32,20 +32,21 @@ services:
     networks:
       - postgres
 
-  prisma-studio:
-    image: node:lts-alpine3.17
-    working_dir: /usr/src/app
-    volumes:
-      - .:/usr/src/app
-    command: npx prisma studio --port 5555 --browser none
-    ports:
-      - "${PRISMA_PORT}:5555"
-    env_file:
-      - .env
-    networks:
-      - postgres
-    depends_on:
-      - postgres
+  # need to fix window/linux dependencies 
+  # prisma-studio:
+  #   image: node:lts-alpine3.17
+  #   working_dir: /usr/src/app
+  #   volumes:
+  #     - .:/usr/src/app
+  #   command: npx prisma studio --port 5555 --browser none
+  #   ports:
+  #     - "${PRISMA_PORT}:5555"
+  #   env_file:
+  #     - .env
+  #   networks:
+  #     - postgres
+  #   depends_on:
+  #     - postgres
     
 
 
