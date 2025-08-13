@@ -12,7 +12,9 @@ export default function DashboardLayout() {
 
   switch(status) {
     case 'loading':
-      return (<div>loading</div>);
+      return (<div className="flex items-center justify-center h-screen">
+        <p className="text-center">Loading...</p>
+      </div>);
     case 'unauthenticated':
       redirect('/');
       return null;

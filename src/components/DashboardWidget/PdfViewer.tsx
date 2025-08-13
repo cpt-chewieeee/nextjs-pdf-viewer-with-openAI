@@ -1,7 +1,11 @@
+import PdfViewerToolBar from "./PdfViewerToolBar";
 
 
 export default function PdfViewer() {
   return (
-    <div className="border border-white h-full">Pdf Viewer</div>
+    <div className="border border-white rounded flex flex-col h-full">
+
+      <PdfViewerToolBar />
+    </div>
   )
 }
