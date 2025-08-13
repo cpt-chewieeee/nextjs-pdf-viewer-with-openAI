@@ -1,10 +1,12 @@
-import { useSession } from "next-auth/react";
-import { signOut } from 'next-auth/react';
+import { Session } from "next-auth";
+import { useSession, signOut } from "next-auth/react";
+
 import { MouseEventHandler } from "react";
 
 
 export default function Header() {
   const { data: session, status } = useSession();
+
   // const loading = status === 'loading';
 
   const handleLogout: MouseEventHandler<HTMLButtonElement> = (event) => {
