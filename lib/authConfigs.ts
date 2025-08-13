@@ -49,6 +49,9 @@ export const authConfig = {
   pages: {
     signIn: '/login',
   },
+  session: {
+    maxAge: 2 * 60 * 60 // 2 hrs in seconds
+  },
   callbacks: {
     async jwt({ token, user }) {
       return { ...token, id: token.id ?? user?.id };
