@@ -1,6 +1,10 @@
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import AppLayout from "./appLayout";
+import PdfList from "./DashboardWidget/PdfList";
+import PdfViewer from "./DashboardWidget/PdfViewer";
+import ChatHistoryList from "./DashboardWidget/ChatHistoryList";
+import Chat from "./DashboardWidget/Chat";
 
 
 export default function DashboardLayout() {
@@ -15,13 +19,13 @@ export default function DashboardLayout() {
     
     case 'authenticated':
         return (
-          <div className="mt-20">
+          <div className="pt-20 h-full">
             <AppLayout>
-              <div className="grid grid-cols-5 grid-rows-5 gap-4">
-                <div className="row-span-5">1</div>
-                <div className="col-span-3 row-span-4">2</div>
-                <div className="col-span-3 col-start-2 row-start-5">3</div>
-                <div className="row-span-5 col-start-5 row-start-1">4</div>
+              <div className="grid grid-cols-6 grid-rows-6 gap-1 h-full">
+                  <div className="row-span-6"><PdfList /></div>
+                  <div className="col-span-3 row-span-6"><PdfViewer /></div>
+                  <div className="col-span-2 row-span-2 col-start-5"><ChatHistoryList /></div>
+                  <div className="col-span-2 row-span-4 col-start-5 row-start-3"><Chat /></div>
               </div>
             </AppLayout>
           </div>
