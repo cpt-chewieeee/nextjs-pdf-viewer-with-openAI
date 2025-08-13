@@ -1,16 +1,21 @@
 import { Session } from "next-auth";
 import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 import { MouseEventHandler } from "react";
 
 
 export default function Header() {
   const { data: session, status } = useSession();
+  const router = useRouter();
 
   // const loading = status === 'loading';
 
   const handleLogout: MouseEventHandler<HTMLButtonElement> = (event) => {
     signOut();
+    router.push('/')
+    router.refresh();
+    
   }
  
   return (

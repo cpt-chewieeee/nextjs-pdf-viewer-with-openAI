@@ -1,20 +1,14 @@
-import { getServerSession } from "next-auth";
-import { authConfig } from "../../../lib/authConfigs";
-import { redirect } from "next/navigation";
-import Layout from "../layout";
+"use client";
+
 import { SessionProvider } from "next-auth/react";
 
-export default async function Dashboard() {
-  const session = await getServerSession(authConfig);
+import DashboardLayout from "../../components/dashboardLayout";
 
-  if(!session) {
-    redirect('/login');
-  }
+export default function Dashboard() {
+
   return (
     <SessionProvider>
-      <Layout>
-        <div>hello world from dashboard</div>
-      </Layout>
+      <DashboardLayout />
     </SessionProvider>
   )
 }
