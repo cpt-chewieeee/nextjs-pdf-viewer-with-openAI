@@ -1,26 +1,39 @@
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { signOut } from 'next-auth/react';
+import { MouseEventHandler } from "react";
 
 
 export default function Header() {
   const { data: session, status } = useSession();
-  const loading = status === 'loading';
-  console.log('header', session, status);
+  // const loading = status === 'loading';
+
+  const handleLogout: MouseEventHandler<HTMLButtonElement> = (event) => {
+    signOut();
+  }
+ 
   return (
-    <header>
-      <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
-        <ul>
-          <li>
-            <Link href='/dashboard'>Test</Link>
-          </li>
-          <li>
-            <Link href='/dashboard'>Home</Link>
-          </li>
-          <li>
-            <Link href='/dashboard'>Profile</Link>
-          </li>
-        </ul>
-      </nav>
-    </header>
+    <>
+      {
+        (session === undefined || session === null) ?
+        null
+        : <header className="absolute top-0 left-0 right-0 bg-blue-500 p-4 text-white z-10 bg-slate-900">
+
+          <div className='flex justify-between items-center'>
+            <span>
+              <small>Signed in as</small>
+              <br />
+              <strong>{session?.user?.name || session?.user?.email}</strong>
+            </span>
+            <button
+              onClick={handleLogout} 
+              className="font-semibold py-2 px-4 border border-gray-400 rounded shadow">
+              Logout
+            </button>
+          </div>
+       
+        </header>
+      }
+    </>
+    
   )
 }
