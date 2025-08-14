@@ -14,9 +14,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model PdfUpload {
+  id Int @id @default(autoincrement())
+  filename String
+
+
+  sizeBytes Int @map("size_bytes")
+  s3Key String @map("s3_key")
+  s3Bucket String @map("s3_bucket")
+  uploadedBy Int @map("uploaded_by")
+  createdAt DateTime @default(now()) @map(name: "created_at")
+
+  user User @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+
+  @@map("pdf_uploads")
+
+  @@index([uploadedBy])
+}
 
 model User {
-  id String @default(cuid()) @id
+  id Int @id @default(autoincrement())
   name String?
   email String? @unique
   password String
@@ -24,10 +41,10 @@ model User {
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  user_accounts UserAccount[]
-  sessions Session[]
+  uploads PdfUpload[]
 
   @@map(name: "users")
 }
+
 
 

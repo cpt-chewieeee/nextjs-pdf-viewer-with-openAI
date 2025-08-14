@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db_dev:push": "npx prisma db push"
+    "db_dev:push": "npx prisma db push",
+    "postdb_dev:push": "npx prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.13.0",
