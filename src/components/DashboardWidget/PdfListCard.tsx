@@ -1,27 +1,42 @@
+import { PdfUpload } from "../../app/types/PdfUpload";
+import { selectFileCallback } from '../../app/types/functions';
 
 
 interface FileCardProps {
-  fileName: string;
-  uploadDate: string;
-  fileSize: string;
+  file: PdfUpload,
+  setSelectedFile: selectFileCallback
 }
-
-export default function PdfListCard({ fileName, uploadDate, fileSize }: FileCardProps) {
+function ConvertToMb(bytes: number): string {
+  if(bytes < 0) {
+    return '0MB';
+  } else {
+    const mb: number = bytes/ (1024 * 1024);
+    return `${mb.toFixed(2)}MB`
+  }
+}
+export default function PdfListCard({ file, setSelectedFile }: FileCardProps) {
 
 
   return (
-    <div className="max-w-sm rounded border border-gray-200 shadow hover:shadow-lg transition-shadow p-4 mt-1">
+    <div className="max-w-sm rounded border border-gray-200 shadow hover:shadow-lg transition-shadow p-4 mt-1" onClick={() => setSelectedFile(file)}>
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-lg font-semibold text-white-800 truncate">{fileName}</h3>
-        <span className="text-sm text-white-500">{uploadDate}</span>
+        <div className="text-lg font-semibold text-white-800 truncate relative group">
+          <h3>
+            {file.filename}
+          </h3>
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-max bg-black text-white text-xs rounded px-2 py-1">
+            {file.filename}
+          </div>
+        </div>
+        <span className="text-sm text-white-500">{file.createdAt.split('T')[0]}</span>
         
       </div>
       
       <div className="text-sm text-white-600 flex items-center justify-between"> 
 
-        <label>Size: {fileSize}</label>
+        <label>Size: {ConvertToMb(file.sizeBytes)}</label>
         <button
-          onClick={() => console.log("Delete", fileName)}
+          onClick={() => console.log("Delete", file.filename)}
           className="text-gray-400 hover:text-red-600"
         >
           <svg

@@ -1,19 +1,33 @@
 import { useState } from "react";
 import PdfViewerToolBar from "./PdfViewerToolBar";
+import { PdfUpload } from "@/app/types/PdfUpload";
+import { selectFileCallback } from "@/app/types/functions";
 
-
-export default function PdfViewer() {
+interface PdfViewerProps {
+  selectedFile: PdfUpload | null;
+  setSelectedFile: selectFileCallback
+}
+export default function PdfViewer({ selectedFile, setSelectedFile }: PdfViewerProps) {
   const [text, setText] = useState("");
   const readText = () => {
 
   }
   const handleFile = () => {
-    
+
+  }
+
+  if(selectedFile === null) {
+    return (
+      <div className="flex items-center justify-center h-full border border-white rounded">
+        <p className="text-center">Upload or select a Pdf on the left.</p>
+      </div>
+    );
+   
   }
   return (
     <div className="border border-white rounded flex flex-col h-full">
 
-      <PdfViewerToolBar />
+      <PdfViewerToolBar selectedFile={selectedFile} setSelectedFile={setSelectedFile}/>
       <div>
          <div className="p-4">
           <input type="file" accept="application/pdf" onChange={handleFile} />

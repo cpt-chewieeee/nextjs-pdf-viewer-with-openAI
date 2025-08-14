@@ -1,14 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { pinata } from '../../../../lib/pinata';
 import prisma from '../../../../lib/prisma';
 import { getServerSession } from "next-auth/next";
 import { authConfig } from '../../../../lib/authConfigs';
+import { PdfUpload } from '@/app/types/PdfUpload';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   const session = await getServerSession(authConfig);
 
-  if(session !== null || session !== undefined) {
-    NextResponse.json(
+  if(session === null || session === undefined) {
+    return NextResponse.json(
       { error: "Unauthorized" },
       { status: 401 }
     );
@@ -39,4 +40,34 @@ export async function POST(request: NextRequest) {
   }
 
 }
-  
+
+export async function GET(request: Request) {
+  const session = await getServerSession(authConfig);
+
+  if(session === null || session === undefined) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const allPdfUploads: PdfUpload[] = await prisma.pdfUpload.findMany({
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    return NextResponse.json(
+      allPdfUploads,
+      {
+        status: 200
+      }
+    )
+  } catch(e) {
+    console.log(e);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}

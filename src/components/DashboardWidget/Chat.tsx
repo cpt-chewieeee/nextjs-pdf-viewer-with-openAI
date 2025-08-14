@@ -24,7 +24,7 @@ export default function Chat() {
 
   
   return (
-    <div className="border border-white flex flex-col h-full max-w-md mx-auto border rounded shadow"> 
+    <div className="border border-white flex flex-col h-full mx-auto border rounded shadow"> 
       <div className="flex-1 overflow-auto p-1 space-y-2">
         {
           messages.map((item: number) => {
