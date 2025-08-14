@@ -4,7 +4,12 @@ import PdfViewerToolBar from "./PdfViewerToolBar";
 
 export default function PdfViewer() {
   const [text, setText] = useState("");
+  const readText = () => {
 
+  }
+  const handleFile = () => {
+    
+  }
   return (
     <div className="border border-white rounded flex flex-col h-full">
 

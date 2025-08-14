@@ -1,14 +1,42 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { pinata } from '../../../../lib/pinata';
 import prisma from '../../../../lib/prisma';
+import { getServerSession } from "next-auth/next";
+import { authConfig } from '../../../../lib/authConfigs';
 
-export async function POST(req: Request) {
-  const { filename, sizeBytes, s3Key, s3Bucket } = await req.json();
+export async function POST(request: NextRequest) {
+  const session = await getServerSession(authConfig);
 
-  const file = await prisma.pdfUpload.create({
-    data: {
-      filename, sizeBytes, s3Key, s3Bucket
-    }
-  });
+  if(session !== null || session !== undefined) {
+    NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+  try {
+    const data = await request.formData();
+    const file: File | null = data.get("file") as unknown as File;
+    const { cid } = await pinata.upload.public.file(file);
+    
+    const url = await pinata.gateways.public.convert(cid);
+    await prisma.pdfUpload.create({
+      data: {
+        filename: file.name,
+        sizeBytes: file.size,
+        cid: cid,
+        fullUrl: url,
 
-  return NextResponse.json(file);
+        uploadedBy: session.user.id
+      }
+    })
+    return NextResponse.json(url, { status: 200 });
+  } catch (e) {
+    console.log(e);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+
 }
+  

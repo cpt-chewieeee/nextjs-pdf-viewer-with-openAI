@@ -20,8 +20,8 @@ model PdfUpload {
 
 
   sizeBytes Int @map("size_bytes")
-  s3Key String @map("s3_key")
-  s3Bucket String @map("s3_bucket")
+  cid String
+  fullUrl String @map("full_url")
   uploadedBy Int @map("uploaded_by")
   createdAt DateTime @default(now()) @map(name: "created_at")
 

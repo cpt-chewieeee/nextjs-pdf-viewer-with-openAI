@@ -1,9 +1,39 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import PdfListCard from "./PdfListCard";
 
 export default function PdfList() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  // const [file, setFile] = useState<File>();
+  const [url, setUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
 
+  const uploadFile = async (file: File) => {
+    try {
+      if(!file) {
+        alert('No file selected');
+        return;
+      }
+      setUploading(true);
+      const data = new FormData();
+     
+      data.set("file", file);
+    
+
+      const uploadRequest = await fetch('/api/pdf', {
+        method: 'POST',
+        body: data
+      });
+
+      const signedUrl = await uploadRequest.json();
+      setUrl(signedUrl);
+      setUploading(false);
+
+    } catch(e) {
+      setUploading(false);
+      alert('Trouble uploading file');
+      console.log(e);
+    }
+  }
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] || null;
 
@@ -13,12 +43,16 @@ export default function PdfList() {
       event.target.value = ""; // reset input
       return;
     }
-
+    
+  
+    uploadFile(event.target?.files?.[0] as File);
 
   };
-  const handleUploadClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleUploadClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
     console.log('click', fileInputRef);
-    fileInputRef.current?.click()
+    fileInputRef.current?.click();
+
+    
   }
   return <div className="border border-white rounded flex flex-col h-full">
     <div className="mx-1 my-1">
@@ -29,9 +63,9 @@ export default function PdfList() {
       </button>
       <input type='file'         
         onChange={handleFileChange}
-        className="hidden" 
+        
         ref={fileInputRef}
-
+        className="hidden"
         accept="application/pdf" />
         
     </div>
