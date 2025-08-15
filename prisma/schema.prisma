@@ -26,6 +26,7 @@ model PdfUpload {
   createdAt DateTime @default(now()) @map(name: "created_at")
 
   user User @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  chats Chat[]
 
   @@map("pdf_uploads")
 
@@ -42,9 +43,23 @@ model User {
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   uploads PdfUpload[]
+  chats Chat[]
 
   @@map(name: "users")
 }
+model Chat {
+  id Int @id @default(autoincrement())
+  content String
+  createdDate DateTime @default(now()) @map("created_date")
+  userId Int @map("user_id")
+  pdfId Int @map("pdf_id")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pdf PdfUpload @relation(fields: [pdfId], references: [id], onDelete: Cascade)
+  response Boolean @default(false)
 
+  @@map("chats")
+  @@index([userId])
+  @@index([pdfId])
+}
 
 

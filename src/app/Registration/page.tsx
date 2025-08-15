@@ -14,8 +14,11 @@ export default function Registration() {
 
     validateForm();
 
+
     try {
       const formData = new FormData(event.currentTarget);
+
+          console.log('===>', Object.fromEntries(formData));
       const signInResult = await signIn("credentials", {
         ...Object.fromEntries(formData),
         redirect: false,
@@ -25,6 +28,8 @@ export default function Registration() {
        
         return;
       }
+
+      console.log('what is this->', signInResult);
 
 
       // redirect('/dashboard')
