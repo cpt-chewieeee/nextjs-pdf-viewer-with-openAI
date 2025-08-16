@@ -1,5 +1,4 @@
-import { selectFileCallback } from "@/app/types/functions";
-import { PdfUploadType } from "@/app/types/PdfUploadType";
+import { PdfUpload } from "@prisma/client/edge";
 
 interface ToolbarProps {
   onPlay?: () => void;
@@ -7,8 +6,8 @@ interface ToolbarProps {
   onStop?: () => void;
 
 
-  selectedFile: PdfUploadType | null;
-  setSelectedFile: selectFileCallback
+  selectedFile: PdfUpload | null;
+  setSelectedFile: (file: PdfUpload | null) => void
 
 }
 

@@ -1,7 +1,5 @@
-import { validateFormCallback, onSubmitEventCallback } from '../types/functions'
 
-
-export const validateForm: validateFormCallback = () => {
+export const validateForm: () => void = () => {
   const inputs: NodeListOf<HTMLInputElement> = document.querySelectorAll('input');
 
   const labels: NodeListOf<HTMLLabelElement> = document.querySelectorAll('label');

@@ -1,10 +1,11 @@
-import { PdfUploadType } from "../../app/types/PdfUploadType";
-import { selectFileCallback } from '../../app/types/functions';
+import { PdfUpload } from "@prisma/client/edge";
+
+
 
 
 interface FileCardProps {
-  file: PdfUploadType,
-  setSelectedFile: selectFileCallback
+  file: PdfUpload,
+  setSelectedFile: (file: PdfUpload | null) => void
 }
 function ConvertToMb(bytes: number): string {
   if(bytes < 0) {
@@ -28,7 +29,7 @@ export default function PdfListCard({ file, setSelectedFile }: FileCardProps) {
             {file.filename}
           </div>
         </div>
-        <span className="text-sm text-white-500">{file.createdAt.split('T')[0]}</span>
+        <span className="text-sm text-white-500">{file.createdAt.toString()}</span>
         
       </div>
       

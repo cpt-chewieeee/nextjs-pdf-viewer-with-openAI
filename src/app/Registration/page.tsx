@@ -1,14 +1,14 @@
 "use client";
-import { onSubmitEventCallback } from '../types/functions'
+
 import { validateForm } from '../helpers/formHelper';
 import { signIn } from 'next-auth/react';
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 
 
 export default function Registration() {
   const router = useRouter();
-  const handleSubmit: onSubmitEventCallback = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
    
 
@@ -18,7 +18,6 @@ export default function Registration() {
     try {
       const formData = new FormData(event.currentTarget);
 
-          console.log('===>', Object.fromEntries(formData));
       const signInResult = await signIn("credentials", {
         ...Object.fromEntries(formData),
         redirect: false,
@@ -29,7 +28,6 @@ export default function Registration() {
         return;
       }
 
-      console.log('what is this->', signInResult);
 
 
       // redirect('/dashboard')

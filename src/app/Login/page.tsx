@@ -1,5 +1,4 @@
 "use client";
-import { onSubmitEventCallback } from '../types/functions';
 import { validateForm } from '../helpers/formHelper';
 import { SessionProvider, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -9,7 +8,7 @@ import AppLayout from '@/components/appLayout';
 
 export default function Login() {
   const router = useRouter();
-  const handleSubmit: onSubmitEventCallback = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void = async (event: React.FormEvent<HTMLFormElement>) => {
   
     event.preventDefault();
    

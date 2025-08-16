@@ -1,21 +1,44 @@
 
 
-import { PdfUpload } from "@prisma/client/edge";
+import { PdfUpload, ChatSession } from "@prisma/client/edge";
 import { useEffect, useState } from "react";
 
 interface ChatHistoryListProps {
   selectedFile: PdfUpload | null;
+  setCurrentChatSession: (chat: ChatSession | null) => void;
 }
 
-export default function ChatHistoryList({ selectedFile }: ChatHistoryListProps) {
-  const [chatSessions, setChatSession] = useState<PdfUpload[]>([]);
+export default function ChatHistoryList({ selectedFile, setCurrentChatSession }: ChatHistoryListProps) {
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   useEffect(() => {
-    console.log(selectedFile)
-  }, [selectedFile])
+    const fetchData = async () => {
+      console.log('ChatHistoryList', selectedFile)
+      await fetchChatSessions();
+    };
+    fetchData();
+  }, [selectedFile]);
+
+  const fetchChatSessions: () => Promise<void> = async (): Promise<void> => {
+    if(selectedFile === null) {
+      return;
+    }
+
+    const req = await fetch(`/api/chatSession/${selectedFile.id}`);
+    if(!req.ok) {
+
+      alert('Unable to create a new chat session');
+      return;
+    }
+    const data = await req.json();
+
+    setChatSessions(data);
+  }
   return (
     <div className="border border-white h-full flex-1 overflow-auto p-1 space-y-2 rounded border">
       <div className="flex justify-between border-b-1 pb-1">
-        <button className="p-2 text-white flex bg-green-600 text-white rounded shadow hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400">
+        <button
+          onClick={() => setCurrentChatSession(null)} 
+          className="p-2 text-white flex bg-green-600 text-white rounded shadow hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400">
           <svg xmlns="http://www.w3.org/2000/svg" 
             width="24" 
             height="24" 
@@ -30,15 +53,11 @@ export default function ChatHistoryList({ selectedFile }: ChatHistoryListProps) 
         </button>
       </div>
       {
-        [].map((item: any, index: number) => {
+        chatSessions.map((item: ChatSession, index: number) => {
           return (
-            <div key={index} className={`flex ${
-              index % 3 === 0 ?  'justify-start' : 'justify-end'
-            }`}>
-              <div className={`max-w-xs px-4 py-2 rounded break-words ${
-                index % 3 === 0 ? 'bg-blue-600 text-white' : 'bg-green-200 text-gray-800'
-              }`}>
-                <p>hello world</p>
+            <div key={index} className='flex w-full'>
+              <div className={`w-full px-4 py-2 rounded break-words bg-green-400 text-gray-800`}>
+                <p>{item.title}</p>
                 <span className="text-xs text-gray-400 block text-right mt-1">10/10/2025</span>
               </div>
             </div>

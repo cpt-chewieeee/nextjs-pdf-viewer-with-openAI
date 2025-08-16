@@ -1,15 +1,15 @@
 import { useState } from "react";
 import PdfViewerToolBar from "./PdfViewerToolBar";
-import { PdfUploadType } from "@/app/types/PdfUploadType";
-import { selectFileCallback } from "@/app/types/functions";
+import { PdfUpload } from "@prisma/client/edge";
 import { Viewer, Worker } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+
 interface PdfViewerProps {
-  selectedFile: PdfUploadType | null;
-  setSelectedFile: selectFileCallback
+  selectedFile: PdfUpload | null;
+  setSelectedFile: (file: PdfUpload | null) => void
 }
 export default function PdfViewer({ selectedFile, setSelectedFile }: PdfViewerProps) {
   const defaultLayoutPluginInstance = defaultLayoutPlugin();

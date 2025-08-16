@@ -1,29 +1,47 @@
-import { ChatMessage } from "@prisma/client/edge";
+import { ChatMessage, ChatSession, PdfUpload } from "@prisma/client/edge";
 import { useEffect, useRef, useState } from "react"
 
-export default function Chat() {
+interface ChatProps {
+  selectedFile: PdfUpload | null;
+  currentChatSession: ChatSession | null;
+  setCurrentChatSession: (chat: ChatSession | null) => void;
+}
+export default function Chat({ currentChatSession, setCurrentChatSession, selectedFile }: ChatProps) {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState("");
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
-  // useEffect(() => {
-  //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  // }, [messages]);
+  useEffect(() => {
+    // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    console.log('update Chat', currentChatSession);
+  }, [currentChatSession]);
   
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleSend()
     }
   };
+  const createNewSession = async () => {
+    if(selectedFile === null) {
+      return null;
+    }
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    console.log('sending', input);
-
+    const data = new FormData();
+    data.set('title', input.trim());
+    data.set('pdfUploadId', String(selectedFile.id));
+    
+    const uploadRequest = await fetch('/api/chatSession', {
+      method: 'POST',
+      body: data,
+    });
+    return await uploadRequest.json();
+  }
+  const sendNewMessage = (session: ChatSession) => {
+ 
     const newMsg: ChatMessage = {
       id: 0,
-      sessionId: 0,
+      sessionId: session.id,
       content: input.trim(),
       createdAt: new Date(),
       metadata: null,
@@ -31,6 +49,21 @@ export default function Chat() {
     }
     setChatMessages(chatMessages.concat([newMsg]))
     setInput('');
+  }
+  const handleSend = async () => {
+    if (!input.trim()) return;
+    
+    if(currentChatSession === null) {
+      const newSession = await createNewSession();
+   
+      setCurrentChatSession(newSession);
+      sendNewMessage(newSession);
+    } 
+    else {
+      sendNewMessage(currentChatSession);
+    }
+    
+    
   };
 
   
