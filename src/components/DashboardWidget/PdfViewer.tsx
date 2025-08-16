@@ -1,10 +1,10 @@
 import { useState } from "react";
 import PdfViewerToolBar from "./PdfViewerToolBar";
-import { PdfUpload } from "@/app/types/PdfUpload";
+import { PdfUploadType } from "@/app/types/PdfUploadType";
 import { selectFileCallback } from "@/app/types/functions";
 
 interface PdfViewerProps {
-  selectedFile: PdfUpload | null;
+  selectedFile: PdfUploadType | null;
   setSelectedFile: selectFileCallback
 }
 export default function PdfViewer({ selectedFile, setSelectedFile }: PdfViewerProps) {

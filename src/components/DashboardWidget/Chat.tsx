@@ -4,7 +4,7 @@ export default function Chat() {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState("");
 
-  const messages: number[] = [0,1,2,3,4,5,6,7,8,9,10];
+  const messages: number[] = [];
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

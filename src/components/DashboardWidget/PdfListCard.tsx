@@ -1,9 +1,9 @@
-import { PdfUpload } from "../../app/types/PdfUpload";
+import { PdfUploadType } from "../../app/types/PdfUploadType";
 import { selectFileCallback } from '../../app/types/functions';
 
 
 interface FileCardProps {
-  file: PdfUpload,
+  file: PdfUploadType,
   setSelectedFile: selectFileCallback
 }
 function ConvertToMb(bytes: number): string {

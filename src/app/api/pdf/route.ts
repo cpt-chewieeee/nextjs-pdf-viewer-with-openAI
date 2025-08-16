@@ -3,7 +3,7 @@ import { pinata } from '../../../../lib/pinata';
 import prisma from '../../../../lib/prisma';
 import { getServerSession } from "next-auth/next";
 import { authConfig } from '../../../../lib/authConfigs';
-import { PdfUpload } from '@/app/types/PdfUpload';
+import { PdfUploadType } from '@/app/types/PdfUploadType';
 
 export async function POST(request: Request) {
   const session = await getServerSession(authConfig);
@@ -52,7 +52,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const allPdfUploads: PdfUpload[] = await prisma.pdfUpload.findMany({
+    const allPdfUploads: PdfUploadType[] = await prisma.pdfUpload.findMany({
       orderBy: {
         createdAt: 'desc'
       }

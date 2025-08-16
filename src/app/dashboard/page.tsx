@@ -6,12 +6,17 @@ import DashboardLayout from "../../components/dashboardLayout";
 
 import './dashboard.css';
 import { useState } from "react";
-import { PdfUpload } from "../types/PdfUpload";
+import { PdfUploadType } from "../types/PdfUploadType";
+import { ChatType } from '../types/ChatType';
 export default function Dashboard() {
-  const [selectedFile, setSelectedFile] = useState<PdfUpload | null>(null);
+  const [selectedFile, setSelectedFile] = useState<PdfUploadType | null>(null);
+  const [chatHistory, setChatHistory] = useState<ChatType[]>([]);
   return (
     <SessionProvider>
-      <DashboardLayout setSelectedFile={(file:PdfUpload) => { setSelectedFile(file); }} selectedFile={selectedFile}/>
+      <DashboardLayout 
+        chatHistory={chatHistory}
+        setSelectedFile={(file:PdfUploadType | null) => { setSelectedFile(file); }} 
+        selectedFile={selectedFile}/>
     </SessionProvider>
   )
 }

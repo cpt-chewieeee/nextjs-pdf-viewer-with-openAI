@@ -1,5 +1,5 @@
 import { selectFileCallback } from "@/app/types/functions";
-import { PdfUpload } from "@/app/types/PdfUpload";
+import { PdfUploadType } from "@/app/types/PdfUploadType";
 
 interface ToolbarProps {
   onPlay?: () => void;
@@ -7,7 +7,7 @@ interface ToolbarProps {
   onStop?: () => void;
 
 
-  selectedFile: PdfUpload | null;
+  selectedFile: PdfUploadType | null;
   setSelectedFile: selectFileCallback
 
 }

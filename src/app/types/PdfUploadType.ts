@@ -1,4 +1,4 @@
-export type PdfUpload = {
+export type PdfUploadType = {
   id: number;
   filename: string;
 

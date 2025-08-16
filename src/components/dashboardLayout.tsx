@@ -5,14 +5,16 @@ import PdfList from "./DashboardWidget/PdfList";
 import PdfViewer from "./DashboardWidget/PdfViewer";
 import ChatHistoryList from "./DashboardWidget/ChatHistoryList";
 import Chat from "./DashboardWidget/Chat";
-import { selectFileCallback } from '../../app/types/functions';
-import { PdfUpload } from "@/app/types/PdfUpload";
+import { selectFileCallback } from '../app/types/functions';
+import { PdfUploadType } from "@/app/types/PdfUploadType";
+import { ChatType } from "@/app/types/ChatType";
 
 interface DashboardLayoutProps {
   setSelectedFile: selectFileCallback;
-  selectedFile: PdfUpload | null;
+  selectedFile: PdfUploadType | null;
+  chatHistory: ChatType[];
 }
-export default function DashboardLayout({ setSelectedFile, selectedFile }: DashboardLayoutProps) {
+export default function DashboardLayout({ setSelectedFile, selectedFile, chatHistory }: DashboardLayoutProps) {
   const { data: session, status } = useSession();
 
   switch(status) {
@@ -31,7 +33,7 @@ export default function DashboardLayout({ setSelectedFile, selectedFile }: Dashb
               <div className="grid grid-cols-6 grid-rows-6 gap-1 h-full">
                   <div className="row-span-6"><PdfList setSelectedFile={setSelectedFile}/></div>
                   <div className="col-span-3 row-span-6"><PdfViewer selectedFile={selectedFile} setSelectedFile={setSelectedFile}/></div>
-                  <div className="col-span-2 row-span-2 col-start-5"><ChatHistoryList /></div>
+                  <div className="col-span-2 row-span-2 col-start-5"><ChatHistoryList chatHistory={chatHistory}/></div>
                   <div className="col-span-2 row-span-4 col-start-5 row-start-3"><Chat /></div>
               </div>
             </AppLayout>

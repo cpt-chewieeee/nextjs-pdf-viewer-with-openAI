@@ -26,7 +26,7 @@ model PdfUpload {
   createdAt DateTime @default(now()) @map(name: "created_at")
 
   user User @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
-  chats Chat[]
+
 
   @@map("pdf_uploads")
 
@@ -43,23 +43,34 @@ model User {
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   uploads PdfUpload[]
-  chats Chat[]
+  sessions ChatSession[]
+
 
   @@map(name: "users")
 }
-model Chat {
+model ChatSession {
   id Int @id @default(autoincrement())
-  content String
-  createdDate DateTime @default(now()) @map("created_date")
+  title String?
   userId Int @map("user_id")
-  pdfId Int @map("pdf_id")
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  pdf PdfUpload @relation(fields: [pdfId], references: [id], onDelete: Cascade)
-  response Boolean @default(false)
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  @@map("chats")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  ChatMessage[]
+
+  @@map("chat_sessions")
   @@index([userId])
-  @@index([pdfId])
 }
 
+model ChatMessage {
+  id Int @id @default(autoincrement())
+  sessionId Int @map("session_id")
+  content String
 
+  createdAt DateTime @default(now()) @map(name: "created_at")
+
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+  @@index([sessionId])
+}

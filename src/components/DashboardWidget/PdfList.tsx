@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import PdfListCard from "./PdfListCard";
-import { PdfUpload } from "../../app/types/PdfUpload";
+import { PdfUploadType } from "../../app/types/PdfUploadType";
 import { selectFileCallback } from '../../app/types/functions';
 
 
@@ -9,7 +9,7 @@ interface PdfListProps {
 }
 export default function PdfList({ setSelectedFile }: PdfListProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [allFiles, setAllFiles] = useState<PdfUpload[]>([]);
+  const [allFiles, setAllFiles] = useState<PdfUploadType[]>([]);
   const [uploading, setUploading] = useState(false);
   const [loadingList, setLoadingList] = useState(false);
 
@@ -70,7 +70,7 @@ export default function PdfList({ setSelectedFile }: PdfListProps) {
         alert('Something went wrong, unable to fetch uploads');
         return;
       }
-      const data: PdfUpload[] = await res.json();
+      const data: PdfUploadType[] = await res.json();
       setAllFiles(data);
     } catch(error) {
       console.error('Error fetching products:', error);
@@ -99,7 +99,7 @@ export default function PdfList({ setSelectedFile }: PdfListProps) {
     <div className="flex-1 overflow-auto border rounded p-1">
       {/* <div> */}
         {
-        allFiles.map((item: PdfUpload, index: number) => {
+        allFiles.map((item: PdfUploadType, index: number) => {
           return (
             <PdfListCard key={index} file={item} setSelectedFile={setSelectedFile}/>
           )
