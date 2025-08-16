@@ -1,25 +1,36 @@
+import { ChatMessage } from "@prisma/client/edge";
 import { useEffect, useRef, useState } from "react"
 
 export default function Chat() {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState("");
 
-  const messages: number[] = [];
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  // useEffect(() => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // }, [messages]);
   
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      
+      handleSend()
     }
   };
 
   const handleSend = () => {
     if (!input.trim()) return;
+    console.log('sending', input);
 
-   
+    const newMsg: ChatMessage = {
+      id: 0,
+      sessionId: 0,
+      content: input.trim(),
+      createdAt: new Date(),
+      metadata: null,
+      isReply: false
+    }
+    setChatMessages(chatMessages.concat([newMsg]))
+    setInput('');
   };
 
   
@@ -27,15 +38,15 @@ export default function Chat() {
     <div className="border border-white flex flex-col h-full mx-auto border rounded shadow"> 
       <div className="flex-1 overflow-auto p-1 space-y-2">
         {
-          messages.map((item: number) => {
+          chatMessages.map((item: ChatMessage, index: number) => {
             return (
-              <div key={item} className={`flex ${
-              item % 3 === 0 ?  'justify-start' : 'justify-end'
+              <div key={index} className={`flex ${
+              item.isReply ?  'justify-start' : 'justify-end'
             }`}>
               <div className={`max-w-xs px-4 py-2 rounded break-words ${
-                item % 3 === 0 ? 'bg-blue-600 text-white' : 'bg-green-200 text-gray-800'
+                item.isReply ? 'bg-blue-600 text-white' : 'bg-green-200 text-gray-800'
               }`}>
-                <p>hello world</p>
+                <p>{item.content}</p>
                 {/* <span className="text-xs text-gray-400 block text-right mt-1">10/10/2025</span> */}
               </div>
             </div>

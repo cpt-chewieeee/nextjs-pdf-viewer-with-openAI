@@ -1,9 +1,17 @@
-import { ChatType } from "@/app/types/ChatType";
+
+
+import { PdfUpload } from "@prisma/client/edge";
+import { useEffect, useState } from "react";
 
 interface ChatHistoryListProps {
-  chatHistory: ChatType[];
+  selectedFile: PdfUpload | null;
 }
-export default function ChatHistoryList({ chatHistory }: ChatHistoryListProps) {
+
+export default function ChatHistoryList({ selectedFile }: ChatHistoryListProps) {
+  const [chatSessions, setChatSession] = useState<PdfUpload[]>([]);
+  useEffect(() => {
+    console.log(selectedFile)
+  }, [selectedFile])
   return (
     <div className="border border-white h-full flex-1 overflow-auto p-1 space-y-2 rounded border">
       <div className="flex justify-between border-b-1 pb-1">
@@ -22,7 +30,7 @@ export default function ChatHistoryList({ chatHistory }: ChatHistoryListProps) {
         </button>
       </div>
       {
-        chatHistory.map((item: ChatType, index: number) => {
+        [].map((item: any, index: number) => {
           return (
             <div key={index} className={`flex ${
               index % 3 === 0 ?  'justify-start' : 'justify-end'

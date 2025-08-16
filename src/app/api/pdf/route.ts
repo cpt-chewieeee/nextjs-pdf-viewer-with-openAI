@@ -4,9 +4,10 @@ import prisma from '../../../../lib/prisma';
 import { getServerSession } from "next-auth/next";
 import { authConfig } from '../../../../lib/authConfigs';
 import { PdfUploadType } from '@/app/types/PdfUploadType';
+import { UserSession } from '@/app/types/userSession';
 
 export async function POST(request: Request) {
-  const session = await getServerSession(authConfig);
+  const session: UserSession | null = await getServerSession(authConfig);
 
   if(session === null || session === undefined) {
     return NextResponse.json(
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const session = await getServerSession(authConfig);
+  const session: UserSession | null = await getServerSession(authConfig);
 
   if(session === null || session === undefined) {
     return NextResponse.json(

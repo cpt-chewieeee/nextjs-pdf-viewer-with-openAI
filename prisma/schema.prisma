@@ -15,62 +15,66 @@ datasource db {
 }
 
 model PdfUpload {
-  id Int @id @default(autoincrement())
+  id       Int    @id @default(autoincrement())
   filename String
 
+  sizeBytes  Int      @map("size_bytes")
+  cid        String
+  fullUrl    String   @map("full_url")
+  uploadedBy Int      @map("uploaded_by")
+  createdAt  DateTime @default(now()) @map(name: "created_at")
+  isPublic   Boolean  @default(false) @map("is_public")
 
-  sizeBytes Int @map("size_bytes")
-  cid String
-  fullUrl String @map("full_url")
-  uploadedBy Int @map("uploaded_by")
-  createdAt DateTime @default(now()) @map(name: "created_at")
-
-  user User @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
-
-
-  @@map("pdf_uploads")
+  user        User          @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+  ChatSession ChatSession[]
 
   @@index([uploadedBy])
+  @@map("pdf_uploads")
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  name String?
-  email String? @unique
-  password String
+  id            Int       @id @default(autoincrement())
+  name          String?
+  email         String?   @unique
+  password      String
   emailVerified DateTime? @map("email_verified")
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  createdAt     DateTime  @default(now()) @map(name: "created_at")
+  updatedAt     DateTime  @updatedAt @map(name: "updated_at")
 
-  uploads PdfUpload[]
+  uploads  PdfUpload[]
   sessions ChatSession[]
-
 
   @@map(name: "users")
 }
-model ChatSession {
-  id Int @id @default(autoincrement())
-  title String?
-  userId Int @map("user_id")
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+model ChatSession {
+  id          Int      @id @default(autoincrement())
+  title       String?
+  userId      Int      @map("user_id")
+  pdfUploadId Int      @map("pdf_upload_id")
+  createdAt   DateTime @default(now()) @map(name: "created_at")
+  updatedAt   DateTime @updatedAt @map(name: "updated_at")
+  
+
+  user      User          @relation(fields: [userId], references: [id])
+  pdfUpload PdfUpload     @relation(fields: [pdfUploadId], references: [id])
   messages  ChatMessage[]
 
-  @@map("chat_sessions")
   @@index([userId])
+  @@map("chat_sessions")
 }
 
 model ChatMessage {
-  id Int @id @default(autoincrement())
-  sessionId Int @map("session_id")
-  content String
+  id        Int    @id @default(autoincrement())
+  sessionId Int    @map("session_id")
+  content   String
 
   createdAt DateTime @default(now()) @map(name: "created_at")
+  metadata  Json?
+  isReply   Boolean  @default(false) @map(name: "is_reply")
 
   session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
-  @@map("chat_messages")
   @@index([sessionId])
+  @@map("chat_messages")
 }
