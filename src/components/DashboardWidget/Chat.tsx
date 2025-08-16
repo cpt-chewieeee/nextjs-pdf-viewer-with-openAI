@@ -14,13 +14,36 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
 
   useEffect(() => {
     // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    console.log('update Chat', currentChatSession);
+    setChatMessages([]);
+    if(currentChatSession !== null) {
+      
+      getSessionMessages();
+    }
   }, [currentChatSession]);
   
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleSend()
     }
+  };
+  const getSessionMessages = async () => {
+    if (!currentChatSession) {
+      return;
+    }
+    
+      const resp = await fetch(`/api/chatMessage/${currentChatSession.id}`);
+      
+
+      if(!resp.ok) {
+        alert('Unable to create new chat');
+  
+        return;
+      }
+      const data = await resp.json();
+ 
+      setChatMessages(data);
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+
   };
   const createNewSession = async () => {
     if(selectedFile === null) {
@@ -36,20 +59,27 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
       body: data,
     });
     return await uploadRequest.json();
-  }
-  const sendNewMessage = (session: ChatSession) => {
- 
-    const newMsg: ChatMessage = {
-      id: 0,
-      sessionId: session.id,
-      content: input.trim(),
-      createdAt: new Date(),
-      metadata: null,
-      isReply: false
+  };
+  const sendNewMessage = async (session: ChatSession) => {
+    try {
+      const data = new FormData();
+      data.set('sessionId', String(session.id));
+      data.set('content', input.trim());
+      const resp = await fetch('/api/chatMessage', {
+        method: 'POST',
+        body: data
+      });
+
+      const newMsg: ChatMessage = await resp.json();
+
+      setChatMessages(chatMessages.concat([newMsg]))
+      setInput('');
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    } catch(err) {
+      alert('unable to create new message')
+      console.error(err);
     }
-    setChatMessages(chatMessages.concat([newMsg]))
-    setInput('');
-  }
+  };
   const handleSend = async () => {
     if (!input.trim()) return;
     

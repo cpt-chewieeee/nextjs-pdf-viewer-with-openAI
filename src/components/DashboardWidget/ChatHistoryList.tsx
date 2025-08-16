@@ -4,19 +4,21 @@ import { PdfUpload, ChatSession } from "@prisma/client/edge";
 import { useEffect, useState } from "react";
 
 interface ChatHistoryListProps {
+  currentChatSession: ChatSession | null;
   selectedFile: PdfUpload | null;
   setCurrentChatSession: (chat: ChatSession | null) => void;
 }
 
-export default function ChatHistoryList({ selectedFile, setCurrentChatSession }: ChatHistoryListProps) {
+export default function ChatHistoryList({ selectedFile, setCurrentChatSession, currentChatSession }: ChatHistoryListProps) {
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   useEffect(() => {
+
     const fetchData = async () => {
-      console.log('ChatHistoryList', selectedFile)
+
       await fetchChatSessions();
     };
     fetchData();
-  }, [selectedFile]);
+  }, [selectedFile, currentChatSession]);
 
   const fetchChatSessions: () => Promise<void> = async (): Promise<void> => {
     if(selectedFile === null) {
@@ -55,7 +57,7 @@ export default function ChatHistoryList({ selectedFile, setCurrentChatSession }:
       {
         chatSessions.map((item: ChatSession, index: number) => {
           return (
-            <div key={index} className='flex w-full'>
+            <div key={index} className='flex w-full' onClick={() => setCurrentChatSession(item)}>
               <div className={`w-full px-4 py-2 rounded break-words bg-green-400 text-gray-800`}>
                 <p>{item.title}</p>
                 <span className="text-xs text-gray-400 block text-right mt-1">10/10/2025</span>
