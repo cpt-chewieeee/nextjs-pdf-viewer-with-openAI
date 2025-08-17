@@ -11,8 +11,8 @@ interface PdfListProps {
 export default function PdfList({ setSelectedFile }: PdfListProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [allFiles, setAllFiles] = useState<PdfUpload[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [loadingList, setLoadingList] = useState(false);
+
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     fetchAllUploads();
@@ -23,7 +23,7 @@ export default function PdfList({ setSelectedFile }: PdfListProps) {
         alert('No file selected');
         return;
       }
-      setUploading(true);
+      setLoading(true);
       const data = new FormData();
      
       data.set("file", file);
@@ -36,13 +36,12 @@ export default function PdfList({ setSelectedFile }: PdfListProps) {
 
       const signedUrl = await uploadRequest.json();
     
-      setUploading(false);
-
     } catch(e) {
-      setUploading(false);
+      
       alert('Trouble uploading file');
       console.error(e);
     } finally {
+      setLoading(false);
       fetchAllUploads();
     }
   }
@@ -65,7 +64,7 @@ export default function PdfList({ setSelectedFile }: PdfListProps) {
   }
   const fetchAllUploads = async () => {
     try {
-      setLoadingList(true);
+      setLoading(true);
       const res = await fetch('/api/pdf');
       if(!res.ok) {
         alert('Something went wrong, unable to fetch uploads');
@@ -77,17 +76,23 @@ export default function PdfList({ setSelectedFile }: PdfListProps) {
       console.error('Error fetching products:', error);
 
     } finally {
-      setLoadingList(false);
+      setLoading(false);
     }
   }
 
   return <div className="border border-white rounded flex flex-col h-full">
     <div className="mx-1 my-1">
       <button       
-        disabled={uploading}  
+        disabled={loading}  
         onClick={handleUploadClick}
-        className="px-4 w-full py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
-        Upload Pdf
+        className="w-full py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        {
+          loading ? <div className="flex justify-center items-center">
+            <div className="animate-spin h-4 w-4 border-4 border-blue-500 border-solid rounded-full border-t-transparent">
+            </div>
+          </div> : <span>Upload Pdf</span>
+        }
+
       </button>
       <input type='file'         
         onChange={handleFileChange}
@@ -97,6 +102,7 @@ export default function PdfList({ setSelectedFile }: PdfListProps) {
         accept="application/pdf" />
         
     </div>
+
     <div className="flex-1 overflow-auto border rounded p-1">
       {/* <div> */}
         {
