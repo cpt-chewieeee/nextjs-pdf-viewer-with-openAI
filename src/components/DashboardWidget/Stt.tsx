@@ -53,7 +53,6 @@ interface SttProps {
 
 const Stt: React.FC<SttProps> = ({ input, handleKeyDown, setInput }: SttProps) => {
   const [isListening, setIsListening] = useState<boolean>(false);
-  const [transcript, setTranscript] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
 
@@ -126,7 +125,7 @@ const Stt: React.FC<SttProps> = ({ input, handleKeyDown, setInput }: SttProps) =
       setIsListening(false);
     } else {
       setError('');
-      setTranscript(''); // Optionally clear transcript on new recording
+     
       setInput('');
       recognition.start();
       setIsListening(true);

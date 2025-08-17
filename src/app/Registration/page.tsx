@@ -10,16 +10,25 @@ export default function Registration() {
   const router = useRouter();
   const handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-   
-
+  
     validateForm();
-
 
     try {
       const formData = new FormData(event.currentTarget);
+      const data = Object.fromEntries(formData);
 
+     
+      if(data.password !== data.repassword) {
+        const repasswordEl = document.querySelector('#repasswordlLabel');
+        const repasswordInputEl = document.querySelector('#repassword');
+
+        repasswordInputEl?.classList.add('border-red-500');
+     
+        repasswordEl?.classList.remove('hidden');
+        return;
+      }
       const signInResult = await signIn("credentials", {
-        ...Object.fromEntries(formData),
+        ...data,
         redirect: false,
       });
 
