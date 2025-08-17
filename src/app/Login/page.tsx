@@ -3,11 +3,13 @@ import { validateForm } from '../helpers/formHelper';
 import { SessionProvider, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import AppLayout from '@/components/appLayout';
+import { useState } from 'react';
 
 
 
 export default function Login() {
   const router = useRouter();
+  const [loading, setLoading] = useState<boolean>(false);
   const handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void = async (event: React.FormEvent<HTMLFormElement>) => {
   
     event.preventDefault();
@@ -17,11 +19,12 @@ export default function Login() {
 
     try {
       const formData = new FormData(event.currentTarget);
+      setLoading(true);
       const response = await signIn('credentials', {
         ...Object.fromEntries(formData),
         redirect: false
       });
-
+      setLoading(false);
       if(response?.error) {
         console.log(response.error);
         return;
@@ -88,11 +91,21 @@ export default function Login() {
 
               </div>
               <div className="flex flex-col shadow-md h-full mt-4">
-                <button type="submit"
+
+                {
+                  loading ?
+                  <div className="flex justify-center items-center">
+                    <div className="animate-spin h-12 w-12 border-4 border-blue-500 border-solid rounded-full border-t-transparent">
+                    </div>
+                  </div> :
+                  <button type="submit"
                   className="bg-green-500 hover:bg-green-700 text-center p-3 rounded-md text-white uppercase"
                   >
                     Submit
                   </button>
+                }
+                
+                
               </div>
             </form>
           </div>
