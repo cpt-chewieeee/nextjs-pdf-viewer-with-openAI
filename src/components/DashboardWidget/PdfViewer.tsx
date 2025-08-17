@@ -28,6 +28,8 @@ export default function PdfViewer({ selectedFile, setSelectedFile }: PdfViewerPr
   const { Toolbar } = toolbarInstance;
   const searchPluginInstance = searchPlugin();
   const { highlight, jumpToNextMatch, jumpToPreviousMatch } = searchPluginInstance;
+  const [loading, setLoading] = useState<boolean>(false);
+
 
 
   const [pdfText, setPdfText] = useState<string>('');
@@ -70,7 +72,7 @@ export default function PdfViewer({ selectedFile, setSelectedFile }: PdfViewerPr
       alert("Your browser does not support Speech Synthesis");
       return;
     }
-
+    setLoading(true);
 
     if (synthRef.current) {
       if (synthRef.current.paused && utteranceRef.current) {
@@ -79,6 +81,7 @@ export default function PdfViewer({ selectedFile, setSelectedFile }: PdfViewerPr
        
         utteranceRef.current = new SpeechSynthesisUtterance(pdfText);
         utteranceRef.current.onboundary = (event) => {
+          setLoading(false);
           if(event.name === 'word' && utteranceRef.current) {
             
             const spokenWord = utteranceRef.current.text.substring(event.charIndex, event.charIndex + event.charLength);
@@ -176,6 +179,7 @@ export default function PdfViewer({ selectedFile, setSelectedFile }: PdfViewerPr
                         {/* Play Button */}
                         <button
                           onClick={startReading}
+                          disabled={loading}
                           className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
                         >
                           <svg
