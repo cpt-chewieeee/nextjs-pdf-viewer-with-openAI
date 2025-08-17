@@ -1,5 +1,7 @@
 import { ChatMessage, ChatSession, PdfUpload } from "@prisma/client/edge";
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react";
+import Stt from "./Stt";
+
 
 interface ChatProps {
   selectedFile: PdfUpload | null;
@@ -11,6 +13,7 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
   const [input, setInput] = useState("");
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  
 
   useEffect(() => {
     // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -96,6 +99,10 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
     
   };
 
+  const handleRecord = () => {
+    
+  }
+
   
   return (
     <div className="border border-white flex flex-col h-full mx-auto border rounded shadow"> 
@@ -120,14 +127,35 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
       </div>
 
        <div className="flex border-t p-1">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Type a message..."
-          className="flex-1 px-4 py-2 border rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+        {/* <div className="relative w-full">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type a message..."
+            className="flex-1 px-4 py-2 w-full border rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+          <button className="absolute top-2 right-4" onClick={handleRecord}>
+            {
+              1 ? (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+              </svg>) : (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+                <path d="M9 9v3a3 3 0 0 0 5.12 2.12"></path>
+                <path d="M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
+                <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+              </svg>)
+            }
+          </button>
+        </div> */}
+        <Stt input={input} setInput={setInput} handleKeyDown={handleKeyDown}/>
         <button
           onClick={handleSend}
           className="px-1 py-1 bg-blue-600 text-white rounded-r hover:bg-blue-700"

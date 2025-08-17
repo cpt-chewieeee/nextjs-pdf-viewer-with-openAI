@@ -82,10 +82,8 @@ export default function PdfViewer({ selectedFile, setSelectedFile }: PdfViewerPr
           if(event.name === 'word' && utteranceRef.current) {
             
             const spokenWord = utteranceRef.current.text.substring(event.charIndex, event.charIndex + event.charLength);
-    
-            
-            highlight(spokenWord);
 
+            highlight(spokenWord);
 
           }
         }
