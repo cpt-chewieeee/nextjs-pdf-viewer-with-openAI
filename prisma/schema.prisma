@@ -18,9 +18,14 @@ model PdfUpload {
   id       Int    @id @default(autoincrement())
   filename String
 
-  sizeBytes  Int      @map("size_bytes")
-  cid        String
-  fullUrl    String   @map("full_url")
+  sizeBytes     Int    @map("size_bytes")
+  vectorStoreId String @map("vector_store_id")
+  assistantId String @map("assistant_id")
+  fileId     String   @map("file_id")
+
+  cid String
+  fullUrl String @map("full_url")
+
   uploadedBy Int      @map("uploaded_by")
   createdAt  DateTime @default(now()) @map(name: "created_at")
   isPublic   Boolean  @default(false) @map("is_public")
@@ -52,9 +57,9 @@ model ChatSession {
   title       String?
   userId      Int      @map("user_id")
   pdfUploadId Int      @map("pdf_upload_id")
+  threadId String @map("thread_id")
   createdAt   DateTime @default(now()) @map(name: "created_at")
   updatedAt   DateTime @updatedAt @map(name: "updated_at")
-  
 
   user      User          @relation(fields: [userId], references: [id])
   pdfUpload PdfUpload     @relation(fields: [pdfUploadId], references: [id])
