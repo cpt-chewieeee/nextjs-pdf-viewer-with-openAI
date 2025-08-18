@@ -12,6 +12,8 @@
     "postdb_dev:push": "npx prisma generate"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^2.0.15",
+    "@ai-sdk/react": "^2.0.15",
     "@prisma/client": "^6.13.0",
     "@react-pdf-viewer/core": "3.12.0",
     "@react-pdf-viewer/default-layout": "3.12.0",
@@ -21,9 +23,11 @@
     "@react-pdf-viewer/toolbar": "^3.12.0",
     "@react-pdf-viewer/zoom": "^3.12.0",
     "@types/bcrypt": "^6.0.0",
+    "ai": "^5.0.15",
     "bcryptjs": "^3.0.2",
     "next": "15.4.6",
     "next-auth": "^4.24.11",
+    "openai": "^5.12.2",
     "pdfjs-dist": "3.4.120",
     "pinata": "^2.4.9",
     "react": "19.1.0",

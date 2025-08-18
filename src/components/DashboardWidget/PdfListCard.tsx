@@ -37,6 +37,7 @@ export default function PdfListCard({ file, setSelectedFile }: FileCardProps) {
 
         <label>Size: {ConvertToMb(file.sizeBytes)}</label>
         <button
+          disabled
           onClick={() => console.log("Delete", file.filename)}
           className="text-gray-400 hover:text-red-600"
         >

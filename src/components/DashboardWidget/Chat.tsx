@@ -1,7 +1,48 @@
 import { ChatMessage, ChatSession, PdfUpload } from "@prisma/client/edge";
 import { useEffect, useRef, useState } from "react";
+import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
 import Stt from "./Stt";
 
+interface ChatMessageType {
+  type: "file";
+  filename: string;
+  mediaType: string;
+  url: string
+}
+async function getFileAsDataUrl(fileUrl: string, filename: string) {
+  try {
+    const response = await fetch(fileUrl);
+    const blob = await response.blob();
+
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if(reader.result) {
+          console.log(reader);
+          const file: ChatMessageType = {
+            type: "file",
+            filename: filename,
+            mediaType: 'application/pdf',
+            url: reader.result as string
+          }
+          resolve(file);
+        } else {
+          reject(new Error("failed to fetch PDF as Data URL"));
+        }
+      };
+
+      reader.onerror = (error) => {
+        reject(error);
+      };
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    alert("Error fetching PDF");
+    return null;
+  }
+}
 
 interface ChatProps {
   selectedFile: PdfUpload | null;
@@ -9,20 +50,40 @@ interface ChatProps {
   setCurrentChatSession: (chat: ChatSession | null) => void;
 }
 export default function Chat({ currentChatSession, setCurrentChatSession, selectedFile }: ChatProps) {
+  
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState("");
-
+  const [fileData, setFileData] = useState<ChatMessageType | null>(null);
+ 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  
+  const { messages, sendMessage } = useChat({
+    transport: new DefaultChatTransport({
+      api: '/api/chatMessage',
+    }),
+  });
 
   useEffect(() => {
     // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    console.log('here->', selectedFile, currentChatSession);
     setChatMessages([]);
     if(currentChatSession !== null) {
       
       getSessionMessages();
     }
-  }, [currentChatSession]);
+
+    if(selectedFile !== null) {
+      getFileAsDataUrl(selectedFile.fullUrl, selectedFile.filename).then((dataUrl) => {
+        console.log(dataUrl);
+        setFileData(dataUrl as ChatMessageType);
+      }).catch(error => {
+        console.error('error', error);
+        alert('Unabled to fetch dataURL');
+      })
+    } else {
+      setFileData(null);
+      
+    }
+  }, [currentChatSession, selectedFile]);
   
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -64,18 +125,51 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
     return await uploadRequest.json();
   };
   const sendNewMessage = async (session: ChatSession) => {
+    if(fileData === null) {
+      return;
+    }
     try {
-      const data = new FormData();
-      data.set('sessionId', String(session.id));
-      data.set('content', input.trim());
-      const resp = await fetch('/api/chatMessage', {
+      // const data = new FormData();
+      // data.set('sessionId', String(session.id));
+      // data.set('content', input.trim());
+      const resp = await fetch(`/api/chatMessage/${session.id}`, {
         method: 'POST',
-        body: data
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'user', 
+              content: [
+                {
+                  type: 'file',
+                 
+                  file: {
+                    filename: fileData.filename,
+                    file_data: fileData.url
+                  }
+                },
+                {
+                  type: 'text',
+                  text: input.trim() + " and return annotation"
+                }
+              ]
+            }
+          ]
+        })
       });
 
-      const newMsg: ChatMessage = await resp.json();
+      const newMsg = await resp.json();
 
-      setChatMessages(chatMessages.concat([newMsg]))
+      console.log('what is my repsonse)', newMsg);
+
+      // const newMsg: ChatMessage = await resp.json();
+
+      // sendMessage({
+      //   role: 'user',
+      //   parts: [{
+      //     type: 'text', text: input.trim()
+      //   }, fileData]
+      // });
+      // setChatMessages(chatMessages.concat([newMsg]))
       setInput('');
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     } catch(err) {
@@ -98,11 +192,7 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
     
     
   };
-
-  const handleRecord = () => {
-    
-  }
-
+  console.log('what is htis', messages);
   
   return (
     <div className="border border-white flex flex-col h-full mx-auto border rounded shadow"> 
