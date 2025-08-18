@@ -27,7 +27,7 @@ export default function PdfList({ setSelectedFile }: PdfListProps) {
 
 
       // create new assistant
-      const assistantRequest = await fetch('/api/assistant', {
+      const assistantRequest = await fetch('/api/ai/assistants', {
         method: 'POST',
         body: JSON.stringify({
           name: file.name

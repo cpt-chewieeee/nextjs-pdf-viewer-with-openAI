@@ -7,12 +7,19 @@ import { AssistantStreamEvent } from "openai/resources/beta/assistants";
 import { RequiredActionFunctionToolCall } from "openai/resources/beta/threads/runs/runs";
 
 import Stt from "./Stt";
+import { TextDelta } from "openai/resources/beta/threads.mjs";
+import { AnnotationDelta } from "openai/resources/beta/threads.js";
 
 interface ChatMessageType {
   type: "file";
   filename: string;
   mediaType: string;
   url: string
+}
+interface ChatProps {
+  selectedFile: PdfUpload | null;
+  currentChatSession: ChatSession | null;
+  setCurrentChatSession: (chat: ChatSession | null) => void;
 }
 async function getFileAsDataUrl(fileUrl: string, filename: string) {
   try {
@@ -24,7 +31,7 @@ async function getFileAsDataUrl(fileUrl: string, filename: string) {
       const reader = new FileReader();
       reader.onloadend = () => {
         if(reader.result) {
-          console.log(reader);
+        
           const file: ChatMessageType = {
             type: "file",
             filename: filename,
@@ -48,28 +55,27 @@ async function getFileAsDataUrl(fileUrl: string, filename: string) {
   }
 }
 
-interface ChatProps {
-  selectedFile: PdfUpload | null;
-  currentChatSession: ChatSession | null;
-  setCurrentChatSession: (chat: ChatSession | null) => void;
-}
+
 export default function Chat({ currentChatSession, setCurrentChatSession, selectedFile }: ChatProps) {
   
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState("");
   const [fileData, setFileData] = useState<ChatMessageType | null>(null);
   const [inputDisabled, setInputDisabled] = useState(false);
+  const [shouldUpdate, setShouldUpdate] = useState<boolean>(false);
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [sessionId, setSessionId] = useState<number | null>(null);
 
 
   useEffect(() => {
-    // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    // console.log('here->', selectedFile, currentChatSession);
+
     setChatMessages([]);
     if(currentChatSession !== null) {
-      
-      // getSessionMessages();
+
+      getSessionMessages();
+      setSessionId(currentChatSession.id);
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
 
     if(selectedFile !== null) {
@@ -83,10 +89,15 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
       })
     } else {
       setFileData(null);
-      
     }
   }, [currentChatSession, selectedFile]);
   
+  useEffect(() => {
+
+    if(shouldUpdate) {
+      saveOpenAiResponse();
+    }
+  }, [shouldUpdate]);
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleSend()
@@ -97,21 +108,21 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
       return;
     }
     
-      const resp = await fetch(`/api/chatMessage/${currentChatSession.id}`);
-      
+    const resp = await fetch(`/api/chatMessage/${currentChatSession.id}`);
+    
 
-      if(!resp.ok) {
-        alert('Unable to create new chat');
+    if(!resp.ok) {
+      alert('Unable to create new chat');
+
+      return;
+    }
+    const data = await resp.json();
   
-        return;
-      }
-      const data = await resp.json();
- 
-      setChatMessages(data);
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setChatMessages(data);
+     
 
   };
-  const createNewSession = async () => {
+  const createNewSession = async (cb: (result: ChatSession) => void) => {
     if(selectedFile === null) {
       return null;
     }
@@ -123,18 +134,24 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
         pdfUploadId: String(selectedFile.id)
       }),
     });
-    return await uploadRequest.json();
+
+    
+    const result = await uploadRequest.json();
+
+    cb(result);
+  
   };
   // handleRequiresAction - handle function call
   const handleRequiresAction = async (
     event: AssistantStreamEvent.ThreadRunRequiresAction
   ) => {
+
     const runId = event.data.id;
     const toolCalls = event.data.required_action.submit_tool_outputs.tool_calls;
     // loop over tool calls and call function handler
     const toolCallOutputs = await Promise.all(
       toolCalls.map(async (toolCall) => {
-        console.log('toolCall', toolCall);
+
         // const result = await functionCallHandler(toolCall);
         return { output: '', tool_call_id: toolCall.id };
       })
@@ -142,7 +159,7 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
     setInputDisabled(true);
     submitActionResult(runId, toolCallOutputs);
   };
-  const submitActionResult = async (runId, toolCallOutputs) => {
+  const submitActionResult = async (runId: any, toolCallOutputs: any) => {
     const response = await fetch(
       `/api/ai/${selectedFile.threadId}/actions`,
       {
@@ -159,13 +176,83 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
     const stream = AssistantStream.fromReadableStream(response.body);
     handleReadableStream(stream);
   };
+
+  const saveOpenAiResponse = async () => {
+    const last = chatMessages[chatMessages.length - 1];
+    const userMsg: ChatMessage = chatMessages[chatMessages.length - 2];
+
+    if(userMsg !== undefined && userMsg !== null) {
+      await fetch(`/api/chatMessage`, {
+        method: 'POST',
+        body: JSON.stringify({
+          ...last,
+          sessionId: userMsg.sessionId
+        })
+      });
+    }
+
+    setShouldUpdate(false);
+    
+  };
+
+  const appendResponseMessage = (text: string) => {
+
+    setChatMessages((prev: ChatMessage[]) => {
+
+      const lastMessage = prev[prev.length - 1];
+      const updated = {
+        ...lastMessage,
+        content: lastMessage.content + text
+      };
+
+      return [
+        ...prev.slice(0, -1), updated
+      ];
+    })
+  };
+  const appendAnnotationMessage = (annotations: AnnotationDelta[]) => {
+    setChatMessages((prev: ChatMessage) => {
+      const last = prev[prev.length - 1];
+      const update = {
+        ...last
+      };
+
+      annotations.forEach((annotation: AnnotationDelta) => {
+        if(annotation.type === 'file_path' && annotation.file_path !== undefined) {
+         
+          update.content = update.content.replaceAll(
+            annotation.text,
+            `/api/files/${annotation.file_path.file_id}`
+          );
+        }
+      });
+
+      return [...prev.slice(0, -1), update]
+    })
+  }
   const handleReadableStream = (stream: AssistantStream) => {
     // messages
+
     stream.on("textCreated", () => {
-      console.log('textcreated');
+
+      setChatMessages((prev: ChatMessage) => [
+        ...prev,
+        {
+          isReply: true,
+          // sessionId: currentChatSession.id,
+          content: ''
+        }
+      ])
     });
     stream.on("textDelta", (delta) => {
-      console.log('textDelta', delta);
+     
+      if(delta.value !== null && delta.value !== undefined) {
+        appendResponseMessage(delta.value);
+      }
+
+      if(delta.annotations !== null && delta.annotations !== undefined) {
+        appendAnnotationMessage(delta.annotations);
+      }
     });
 
     // image
@@ -183,14 +270,18 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
     });
   };
   const handleRunCompleted = () => {
+
     setInputDisabled(false);
+    setShouldUpdate(true);
+    
   };
   const sendNewMessage = async (session: ChatSession) => {
     if(fileData === null) {
       return;
     }
+
     try {
-       const response = await fetch(
+      const response: any = await fetch(
         `/api/ai/${session.threadId}/messages`,
         {
           method: "POST",
@@ -201,9 +292,19 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
           }),
         }
       );
+      setChatMessages((prev: ChatMessage) => [
+        ...prev,
+        {
+          isReply: false,
+          sessionId: session.id,
+          content: input.trim()
+        }
+      ])
+      
+     
       const stream = AssistantStream.fromReadableStream(response.body);
-      handleReadableStream(stream);
-
+      handleReadableStream(stream, session);
+      
       setInput('');
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     } catch(err) {
@@ -213,23 +314,28 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
   };
   const handleSend = async () => {
     if (!input.trim()) return;
-    
+
     if(currentChatSession === null) {
-      const newSession = await createNewSession();
-      setInputDisabled(true);
-      setCurrentChatSession(newSession);
-      sendNewMessage(newSession);
+
+      await createNewSession((result: ChatSession) => {
+
+        setInputDisabled(true);
+        setCurrentChatSession(result);
+        setSessionId(result.id);
+        sendNewMessage(result);
+      });
+      
       
     } 
     else {
       setInputDisabled(true);
+      setSessionId(currentChatSession.id)
       sendNewMessage(currentChatSession);
     }
     
     
   };
 
-  
   return (
     <div className="border border-white flex flex-col h-full mx-auto border rounded shadow"> 
       <div className="flex-1 overflow-auto p-1 space-y-2">
@@ -281,12 +387,18 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
             }
           </button>
         </div> */}
-        <Stt input={input} setInput={setInput} handleKeyDown={handleKeyDown}/>
+        <Stt input={input} setInput={setInput} handleKeyDown={handleKeyDown} inputDisabled={inputDisabled}/>
         <button
           onClick={handleSend}
+          disabled={inputDisabled}
           className="px-1 py-1 bg-blue-600 text-white rounded-r hover:bg-blue-700"
         >
-          Send
+          {
+          inputDisabled ? <div className="flex justify-center items-center">
+            <div className="animate-spin h-4 w-4 border-4 border-blue-500 border-solid rounded-full border-t-transparent">
+            </div>
+          </div> : <span>Send</span>
+        }
         </button>
       </div>
     </div>
