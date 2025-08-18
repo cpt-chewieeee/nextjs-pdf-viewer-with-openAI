@@ -9,6 +9,7 @@ import { RequiredActionFunctionToolCall } from "openai/resources/beta/threads/ru
 import Stt from "./Stt";
 import { TextDelta } from "openai/resources/beta/threads.mjs";
 import { AnnotationDelta } from "openai/resources/beta/threads.js";
+import ChatBubble from "./ChatBubble";
 
 interface ChatMessageType {
   type: "file";
@@ -342,16 +343,7 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
         {
           chatMessages.map((item: ChatMessage, index: number) => {
             return (
-              <div key={index} className={`flex ${
-              item.isReply ?  'justify-start' : 'justify-end'
-            }`}>
-              <div className={`max-w-xs px-4 py-2 rounded break-words ${
-                item.isReply ? 'bg-blue-600 text-white' : 'bg-green-200 text-gray-800'
-              }`}>
-                <p>{item.content}</p>
-                {/* <span className="text-xs text-gray-400 block text-right mt-1">10/10/2025</span> */}
-              </div>
-            </div>
+              <ChatBubble chatMessage={item}  key={index} />
             )
           })
         }
