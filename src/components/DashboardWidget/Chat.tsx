@@ -1,7 +1,11 @@
 import { ChatMessage, ChatSession, PdfUpload } from "@prisma/client/edge";
 import { useEffect, useRef, useState } from "react";
 import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
+import { DefaultChatTransport, tool } from 'ai';
+import { AssistantStream } from "openai/lib/AssistantStream";
+import { AssistantStreamEvent } from "openai/resources/beta/assistants";
+import { RequiredActionFunctionToolCall } from "openai/resources/beta/threads/runs/runs";
+
 import Stt from "./Stt";
 
 interface ChatMessageType {
@@ -54,26 +58,24 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState("");
   const [fileData, setFileData] = useState<ChatMessageType | null>(null);
- 
+  const [inputDisabled, setInputDisabled] = useState(false);
+
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const { messages, sendMessage } = useChat({
-    transport: new DefaultChatTransport({
-      api: '/api/chatMessage',
-    }),
-  });
+
 
   useEffect(() => {
     // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    console.log('here->', selectedFile, currentChatSession);
+    // console.log('here->', selectedFile, currentChatSession);
     setChatMessages([]);
     if(currentChatSession !== null) {
       
-      getSessionMessages();
+      // getSessionMessages();
     }
 
     if(selectedFile !== null) {
+     
       getFileAsDataUrl(selectedFile.fullUrl, selectedFile.filename).then((dataUrl) => {
-        console.log(dataUrl);
+       
         setFileData(dataUrl as ChatMessageType);
       }).catch(error => {
         console.error('error', error);
@@ -114,62 +116,94 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
       return null;
     }
 
-    const data = new FormData();
-    data.set('title', input.trim());
-    data.set('pdfUploadId', String(selectedFile.id));
-    
     const uploadRequest = await fetch('/api/chatSession', {
       method: 'POST',
-      body: data,
+      body: JSON.stringify({
+        title: input.trim(),
+        pdfUploadId: String(selectedFile.id)
+      }),
     });
     return await uploadRequest.json();
+  };
+  // handleRequiresAction - handle function call
+  const handleRequiresAction = async (
+    event: AssistantStreamEvent.ThreadRunRequiresAction
+  ) => {
+    const runId = event.data.id;
+    const toolCalls = event.data.required_action.submit_tool_outputs.tool_calls;
+    // loop over tool calls and call function handler
+    const toolCallOutputs = await Promise.all(
+      toolCalls.map(async (toolCall) => {
+        console.log('toolCall', toolCall);
+        // const result = await functionCallHandler(toolCall);
+        return { output: '', tool_call_id: toolCall.id };
+      })
+    );
+    setInputDisabled(true);
+    submitActionResult(runId, toolCallOutputs);
+  };
+  const submitActionResult = async (runId, toolCallOutputs) => {
+    const response = await fetch(
+      `/api/ai/${selectedFile.threadId}/actions`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          runId: runId,
+          toolCallOutputs: toolCallOutputs,
+        }),
+      }
+    );
+    const stream = AssistantStream.fromReadableStream(response.body);
+    handleReadableStream(stream);
+  };
+  const handleReadableStream = (stream: AssistantStream) => {
+    // messages
+    stream.on("textCreated", () => {
+      console.log('textcreated');
+    });
+    stream.on("textDelta", (delta) => {
+      console.log('textDelta', delta);
+    });
+
+    // image
+    // stream.on("imageFileDone", handleImageFileDone);
+
+    // code interpreter
+    // stream.on("toolCallCreated", toolCallCreated);
+    // stream.on("toolCallDelta", toolCallDelta);
+
+    // events without helpers yet (e.g. requires_action and run.done)
+    stream.on("event", (event) => {
+      if (event.event === "thread.run.requires_action")
+        handleRequiresAction(event);
+      if (event.event === "thread.run.completed") handleRunCompleted();
+    });
+  };
+  const handleRunCompleted = () => {
+    setInputDisabled(false);
   };
   const sendNewMessage = async (session: ChatSession) => {
     if(fileData === null) {
       return;
     }
     try {
-      // const data = new FormData();
-      // data.set('sessionId', String(session.id));
-      // data.set('content', input.trim());
-      const resp = await fetch(`/api/chatMessage/${session.id}`, {
-        method: 'POST',
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'user', 
-              content: [
-                {
-                  type: 'file',
-                 
-                  file: {
-                    filename: fileData.filename,
-                    file_data: fileData.url
-                  }
-                },
-                {
-                  type: 'text',
-                  text: input.trim() + " and return annotation"
-                }
-              ]
-            }
-          ]
-        })
-      });
+       const response = await fetch(
+        `/api/ai/${session.threadId}/messages`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            sessionId: session.id,
+            content: input.trim(),
+            assistantId: selectedFile.assistantId
+          }),
+        }
+      );
+      const stream = AssistantStream.fromReadableStream(response.body);
+      handleReadableStream(stream);
 
-      const newMsg = await resp.json();
-
-      console.log('what is my repsonse)', newMsg);
-
-      // const newMsg: ChatMessage = await resp.json();
-
-      // sendMessage({
-      //   role: 'user',
-      //   parts: [{
-      //     type: 'text', text: input.trim()
-      //   }, fileData]
-      // });
-      // setChatMessages(chatMessages.concat([newMsg]))
       setInput('');
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     } catch(err) {
@@ -182,17 +216,19 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
     
     if(currentChatSession === null) {
       const newSession = await createNewSession();
-   
+      setInputDisabled(true);
       setCurrentChatSession(newSession);
       sendNewMessage(newSession);
+      
     } 
     else {
+      setInputDisabled(true);
       sendNewMessage(currentChatSession);
     }
     
     
   };
-  console.log('what is htis', messages);
+
   
   return (
     <div className="border border-white flex flex-col h-full mx-auto border rounded shadow"> 

@@ -24,9 +24,21 @@ export default function PdfList({ setSelectedFile }: PdfListProps) {
         return;
       }
       setLoading(true);
+
+
+      // create new assistant
+      const assistantRequest = await fetch('/api/assistant', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: file.name
+        })
+      });
+      const {assistantId} = await assistantRequest.json();
+    
       const data = new FormData();
      
       data.set("file", file);
+      data.set("assistantId", assistantId);
     
 
       const uploadRequest = await fetch('/api/pdf', {
@@ -34,8 +46,8 @@ export default function PdfList({ setSelectedFile }: PdfListProps) {
         body: data
       });
 
-      const signedUrl = await uploadRequest.json();
-    
+      const result = await uploadRequest.json();
+      console.log(result);
     } catch(e) {
       
       alert('Trouble uploading file');

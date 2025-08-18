@@ -1,10 +1,35 @@
 import { NextResponse } from 'next/server';
-import { pinata } from '../../../../lib/pinata';
+
 import prisma from '../../../../lib/prisma';
 import { getServerSession } from "next-auth/next";
 import { authConfig } from '../../../../lib/authConfigs';
 import { UserSession } from '@/app/types/userSession';
 import { PdfUpload } from '@prisma/client/edge';
+import openai from '../../../../lib/openai';
+import { pinata } from '../../../../lib/pinata';
+
+
+/* Helper functions */
+const getOrCreateVectorStore = async (assistantId: string) => {
+  const assistant: any = await openai.beta.assistants.retrieve(assistantId);
+
+  // if the assistant already has a vector store, return it
+  if (assistant.tool_resources?.file_search?.vector_store_ids?.length > 0) {
+    return assistant.tool_resources.file_search.vector_store_ids[0];
+  }
+  // otherwise, create a new vector store and attatch it to the assistant
+  const vectorStore = await openai.vectorStores.create({
+    name: "nextjs-pdf-llm-demo",
+  });
+  await openai.beta.assistants.update(assistantId, {
+    tool_resources: {
+      file_search: {
+        vector_store_ids: [vectorStore.id],
+      },
+    },
+  });
+  return vectorStore.id;
+};
 
 export async function POST(request: Request) {
   const session: UserSession | null = await getServerSession(authConfig);
@@ -18,20 +43,34 @@ export async function POST(request: Request) {
   try {
     const data = await request.formData();
     const file: File | null = data.get("file") as unknown as File;
-    const { cid } = await pinata.upload.public.file(file);
-    
-    const url = await pinata.gateways.public.convert(cid);
-    await prisma.pdfUpload.create({
-      data: {
-        filename: file.name,
-        sizeBytes: file.size,
-        cid: cid,
-        fullUrl: url,
+    const assistantId: string = data.get('assistantId') as string;
 
-        uploadedBy: session.user.id
+    const vectorStoreId = await getOrCreateVectorStore(assistantId);
+    const { cid } = await pinata.upload.public.file(file);
+    const url = await pinata.gateways.public.convert(cid);
+    const openaiFile = await openai.files.create({
+      file: file,
+      purpose: "assistants"
+    });
+
+    await openai.vectorStores.files.create(vectorStoreId, {
+      file_id: openaiFile.id
+    });
+
+    const result = await prisma.pdfUpload.create({
+      data: {
+        uploadedBy: session.user.id,
+        vectorStoreId: vectorStoreId,
+        fileId: openaiFile.id,
+        sizeBytes: file.size,
+        assistantId: assistantId,
+        filename: file.name,
+        cid: cid,
+        fullUrl: url
       }
-    })
-    return NextResponse.json(url, { status: 200 });
+    });
+  
+    return NextResponse.json(result, { status: 200 });
   } catch (e) {
     console.log(e);
     return NextResponse.json(
