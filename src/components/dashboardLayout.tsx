@@ -16,7 +16,7 @@ export default function DashboardLayout() {
   const [selectedFile, setSelectedFile] = useState<PdfUpload | null>(null);
 
   const [currentChatSession, setCurrentChatSession] = useState<ChatSession | null>(null);
-
+  
 
   switch(status) {
     case 'loading':

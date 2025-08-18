@@ -47,11 +47,11 @@ declare global {
 interface SttProps {
   input: string;
   handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-
+  inputDisabled: boolean;
   setInput: (text: string) => void;
 }
 
-const Stt: React.FC<SttProps> = ({ input, handleKeyDown, setInput }: SttProps) => {
+const Stt: React.FC<SttProps> = ({ input, handleKeyDown, setInput, inputDisabled }: SttProps) => {
   const [isListening, setIsListening] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
@@ -138,13 +138,14 @@ const Stt: React.FC<SttProps> = ({ input, handleKeyDown, setInput }: SttProps) =
       <input
             type="text"
             value={input}
+            disabled={inputDisabled}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={isListening ? 'Listening...' : 'Click the microphone or type message to start'}
             className="flex-1 px-4 py-2 w-full border rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
-          <button className="absolute top-2 right-4" onClick={toggleListening}>
+          <button className="absolute top-2 right-4" onClick={toggleListening} disabled={inputDisabled}>
             {
               isListening ? (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
