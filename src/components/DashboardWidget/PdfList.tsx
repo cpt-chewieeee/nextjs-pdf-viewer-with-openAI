@@ -47,7 +47,7 @@ export default function PdfList({ setSelectedFile }: PdfListProps) {
       });
 
       const result = await uploadRequest.json();
-      console.log(result);
+  
     } catch(e) {
       
       alert('Trouble uploading file');
