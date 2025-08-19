@@ -7,10 +7,10 @@ export default function WelcomePage() {
   const router = useRouter();
 
   const onLoginClick = () => {
-    router.push('/login')
+    router.push('/Login')
   }
   const onRegisterClick = () => {
-    router.push('/registration')
+    router.push('/Registration')
   }
   const onDashboardClick = () => {
     router.push('/dashboard');
