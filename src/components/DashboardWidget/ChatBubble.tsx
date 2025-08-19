@@ -103,7 +103,7 @@ export default function ChatBubble({ chatMessage, setAnnotations }: ChatBubblePr
           {
             chatMessage.createdAt !== null ?
             (
-              <div className="text-xs text-gray-400 block text-right mt-1">{chatMessage.createdAt.toString()}</div>
+              <div className="text-xs text-gray-400 block text-right mt-1">{chatMessage.createdAt as unknown as string}</div>
             ) : null
           }
         </div>

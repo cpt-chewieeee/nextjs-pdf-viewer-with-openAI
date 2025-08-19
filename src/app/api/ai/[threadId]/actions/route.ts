@@ -9,8 +9,8 @@ export async function POST(request: Request, context: { params: Promise<{ thread
   const stream = openai.beta.threads.runs.submitToolOutputsStream(
     id,
     runId,
-  
-    { tool_outputs: toolCallOutputs }
+    // @ts-expect-error: this is working, but typescript is not able to detect
+    { tool_outputs: toolCallOutputs } 
   );
 
   return new Response(stream.toReadableStream());

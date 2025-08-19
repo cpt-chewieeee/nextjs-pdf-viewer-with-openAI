@@ -5,7 +5,7 @@ import openai from "../../../../../lib/openai";
 export async function POST() {
   const assistant = await openai.beta.assistants.create({
     instructions: "You are a helpful assistant.",
-    name: "Quickstart Assistant",
+    name: "nextjs-pdf-viewer-assistant",
     model: "gpt-4o",
     tools: [
       { type: "code_interpreter" },
