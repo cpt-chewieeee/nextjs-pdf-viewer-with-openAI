@@ -9,19 +9,26 @@ import { RenderCurrentScaleProps, RenderZoomInProps, RenderZoomOutProps } from "
 import { RenderGoToPageProps } from "@react-pdf-viewer/page-navigation";
 import { searchPlugin } from '@react-pdf-viewer/search';
 
-
+import { highlightPlugin, HighlightArea } from '@react-pdf-viewer/highlight';
 
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import { useEffect, useRef, useState } from "react";
+import { Annotation } from "openai/resources/beta/threads.js";
 
 interface PdfViewerProps {
   selectedFile: PdfUpload | null;
-  setSelectedFile: (file: PdfUpload | null) => void
+  setSelectedFile: (file: PdfUpload | null) => void;
+  annotations: Annotation[];
+}
+interface PdfPage {
+  page: number;
+  content: string;
+  pageContent: any;
 }
 
 
-export default function PdfViewer({ selectedFile, setSelectedFile }: PdfViewerProps) {
+export default function PdfViewer({ selectedFile, setSelectedFile, annotations }: PdfViewerProps) {
 
 
   const toolbarInstance = toolbarPlugin();
@@ -30,14 +37,37 @@ export default function PdfViewer({ selectedFile, setSelectedFile }: PdfViewerPr
   const { highlight, jumpToNextMatch, jumpToPreviousMatch } = searchPluginInstance;
   const [loading, setLoading] = useState<boolean>(false);
 
+  const [pages, setPages] = useState<PdfPage[]>([])
 
-
+  const highlightPluginInstance = highlightPlugin();
+  const { jumpToHighlightArea } = highlightPluginInstance;
   const [pdfText, setPdfText] = useState<string>('');
   const synthRef = useRef<SpeechSynthesis | null>(null);
 
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  function substringWholeWords(text: string, start: number, end: number): string {
+      // Ensure indices are in range
+      start = Math.max(0, start);
+      end = Math.min(text.length, end);
 
+      // Move start backward until we hit a word boundary or space
+      while (start > 0 && /\w/.test(text[start - 1])) {
+          start--;
+      }
 
+      // Move end forward until we hit a word boundary or space
+      while (end < text.length && /\S/.test(text[end])) {
+          end++;
+      }
+
+      return text.substring(start, end);
+  }
+  useEffect(() => {
+   
+    if(annotations.length > 0) {
+      hightlightNotes();
+    }
+  }, [annotations]);
   useEffect(() => {
     if(synthRef.current === null) {
       synthRef.current = window.speechSynthesis;
@@ -46,6 +76,36 @@ export default function PdfViewer({ selectedFile, setSelectedFile }: PdfViewerPr
       extractText();
     }
   }, [selectedFile]);
+
+  const hightlightNotes = () => {
+ 
+
+    annotations.forEach((item: any) => {
+      const startIndex = item.start_index;
+      const endIndex = item.end_index;
+      
+       
+      const pageText = pages.map((it: any) => it.content).join(' ');
+
+      const sub = substringWholeWords(pageText, startIndex, endIndex).replace(/\s{2,}/g, " ").split(' ');
+     
+
+      const matchConfigs: any = sub.reduce((arr: any, desc: string) => {
+
+       
+        const x = {
+          keyword: desc,
+          wholeWords: false,
+          matchCase: true
+        }
+        return arr.concat([x]);
+    
+        
+      }, [])
+   
+      highlight(matchConfigs);
+    });
+  }
   const extractText = async () => {
     if (!selectedFile?.fullUrl) {
       throw new Error("No PDF file URL provided.");
@@ -53,14 +113,24 @@ export default function PdfViewer({ selectedFile, setSelectedFile }: PdfViewerPr
     const loadingTask = pdfjsLib.getDocument(selectedFile.fullUrl);
     const pdf = await loadingTask.promise;
 
+    const newPages: PdfPage[] = [] as PdfPage[];
     let text = "";
     for(let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
+    
+
+      
+      
       const pageText = content.items.map((item: any) => item.str).join(" ");
       text += pageText + "\n";
+      newPages.push({
+        page: i,
+        content: pageText,
+        pageContent: content
+      });
     }
-
+    setPages(newPages);
     setPdfText(text);
    
   };

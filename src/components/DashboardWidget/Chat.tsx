@@ -15,12 +15,14 @@ interface ChatMessageType {
   type: "file";
   filename: string;
   mediaType: string;
-  url: string
+  url: string;
+
 }
 interface ChatProps {
   selectedFile: PdfUpload | null;
   currentChatSession: ChatSession | null;
   setCurrentChatSession: (chat: ChatSession | null) => void;
+  setAnnotations: (items: AnnotationDelta[]) => void
 }
 async function getFileAsDataUrl(fileUrl: string, filename: string) {
   try {
@@ -57,7 +59,7 @@ async function getFileAsDataUrl(fileUrl: string, filename: string) {
 }
 
 
-export default function Chat({ currentChatSession, setCurrentChatSession, selectedFile }: ChatProps) {
+export default function Chat({ currentChatSession, setCurrentChatSession, selectedFile, setAnnotations }: ChatProps) {
   
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState("");
@@ -182,6 +184,10 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
     const last = chatMessages[chatMessages.length - 1];
     const userMsg: ChatMessage = chatMessages[chatMessages.length - 2];
 
+
+    if(last.metadata !== null && last.metadata !== undefined && last.metadata.annotation !== undefined) {
+      setAnnotations(last.metadata.annotation);
+    }
     if(userMsg !== undefined && userMsg !== null) {
       await fetch(`/api/chatMessage`, {
         method: 'POST',
@@ -212,20 +218,21 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
     })
   };
   const appendAnnotationMessage = (annotations: AnnotationDelta[]) => {
-    setChatMessages((prev: ChatMessage) => {
+
+
+    if(annotations.length === 0) {
+      return;
+    }
+    setChatMessages((prev: ChatMessage[]) => {
       const last = prev[prev.length - 1];
       const update = {
         ...last
       };
-
+  
       annotations.forEach((annotation: AnnotationDelta) => {
-        if(annotation.type === 'file_path' && annotation.file_path !== undefined) {
-         
-          update.content = update.content.replaceAll(
-            annotation.text,
-            `/api/files/${annotation.file_path.file_id}`
-          );
-        }
+
+        update?.metadata?.annotation?.push(annotation);
+   
       });
 
       return [...prev.slice(0, -1), update]
@@ -241,7 +248,10 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
         {
           isReply: true,
           // sessionId: currentChatSession.id,
-          content: ''
+          content: '',
+          metadata: {
+            annotation: []
+          }
         }
       ])
     });
@@ -252,12 +262,15 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
       }
 
       if(delta.annotations !== null && delta.annotations !== undefined) {
+   
         appendAnnotationMessage(delta.annotations);
       }
     });
 
     // image
-    // stream.on("imageFileDone", handleImageFileDone);
+    stream.on("imageFileDone", (image) => {
+      appendResponseMessage(`\n![${image.file_id}](/api/files/${image.file_id})\n`);
+    });
 
     // code interpreter
     // stream.on("toolCallCreated", toolCallCreated);
@@ -343,7 +356,7 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
         {
           chatMessages.map((item: ChatMessage, index: number) => {
             return (
-              <ChatBubble chatMessage={item}  key={index} />
+              <ChatBubble chatMessage={item} key={index} setAnnotations={setAnnotations}/>
             )
           })
         }
