@@ -3,7 +3,7 @@ import { ChatMessage } from "@prisma/client/index-browser";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import { authConfig } from "../../../../lib/authConfigs";
-
+import prisma from '../../../../lib/prisma';
 
 
 export async function POST(req: Request) {

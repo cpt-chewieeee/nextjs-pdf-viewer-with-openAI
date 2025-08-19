@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authConfig } from "../../../../../lib/authConfigs";
 import { NextResponse } from "next/server";
 import { UserSession } from "@/app/types/userSession";
-
+import prisma from '../../../../../lib/prisma';
 
 
 // Get all sessions for a user

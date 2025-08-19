@@ -2,7 +2,7 @@ import { UserSession } from "@/app/types/userSession";
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from "next/server";
 import { authConfig } from "../../../../../lib/authConfigs";
-
+import prisma from '../../../../../lib/prisma';
 
 // Get all messages for a session
 export async function GET(req: Request, context: { params: Promise<{ id: string }>; }) {

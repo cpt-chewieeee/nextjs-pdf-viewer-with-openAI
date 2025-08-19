@@ -1,5 +1,5 @@
 import openai from "../../../../../../lib/openai";
-
+import prisma from '../../../../../../lib/prisma';
 // Send a new message to a thread
 export async function POST(request: Request, context: { params: Promise<{ threadId: string }>; }) {
   const { content, assistantId, sessionId } = await request.json();

@@ -3,7 +3,7 @@ import { authConfig } from "../../../../lib/authConfigs";
 import { NextResponse } from "next/server";
 import { UserSession } from "@/app/types/userSession";
 import openai from "../../../../lib/openai";
-
+import prisma from '../../../../lib/prisma';
 
 
 // Create new chat session
