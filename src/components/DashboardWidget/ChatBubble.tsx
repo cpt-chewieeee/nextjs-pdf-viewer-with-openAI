@@ -1,15 +1,18 @@
 import { ChatMessage } from "@prisma/client"
+import { AnnotationDelta } from "openai/resources/beta/threads.mjs";
 import { useEffect, useRef, useState } from "react";
+
+import reactStringReplace from 'react-string-replace';
 
 
 interface ChatBubbleProps {
-  chatMessage: ChatMessage
+  chatMessage: ChatMessage;
+  setAnnotations: (items: AnnotationDelta[]) => void;
 }
-export default function ChatBubble({ chatMessage }: ChatBubbleProps) {
+export default function ChatBubble({ chatMessage, setAnnotations }: ChatBubbleProps) {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-
 
   useEffect(() => {
     if(synthRef.current === null) {
@@ -40,6 +43,31 @@ export default function ChatBubble({ chatMessage }: ChatBubbleProps) {
       synthRef.current.speak(utteranceRef.current);
     }
   }
+  const renderContentBasedOnAnnotation = () => {
+
+
+    let message = chatMessage.content;
+    if(chatMessage.metadata !== null && chatMessage.metadata !== undefined && chatMessage.metadata.annotation !== undefined) {
+    
+
+      message = chatMessage.metadata.annotation.reduce((text: string, chat: AnnotationDelta) => {
+        const source = chat.text;
+
+        if(source !== null && source !== undefined && text.indexOf(source) > -1) {
+          
+
+          return reactStringReplace(text, source, (match, i) => {
+            return (
+              <strong key={i} className="underline cursor-pointer" onClick={() => setAnnotations([chat])}>{match}</strong>
+            )
+          })
+        }
+        return text;
+      }, message)
+    }
+   
+    return (<span>{message}</span>);
+  }
   return (
     <div className={`flex ${
       chatMessage.isReply ?  'justify-start' : 'justify-end'
@@ -47,7 +75,7 @@ export default function ChatBubble({ chatMessage }: ChatBubbleProps) {
       <div className={`max-w-xs px-4 py-2 rounded break-words ${
         chatMessage.isReply ? 'bg-blue-600 text-white' : 'bg-green-200 text-gray-800'
       }`}>
-        <p>{chatMessage.content}</p>
+        <div>{renderContentBasedOnAnnotation()}</div>
 
         <div className="flex justify-between flex-row">
           <div>

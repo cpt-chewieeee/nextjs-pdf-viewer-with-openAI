@@ -20,7 +20,7 @@ export async function POST(req: Request) {
 
   try {
     const chatMessage: ChatMessage = await req.json();
-    console.log(JSON.stringify(chatMessage));
+
     const newMessage = await prisma.chatMessage.create({
       data: chatMessage
     });
