@@ -5,9 +5,9 @@ import { authConfig } from "../../../../../lib/authConfigs";
 
 
 // Get all messages for a session
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }>; }) {
   const session: UserSession | null = await getServerSession(authConfig);
-  
+  const { params } = context;
   if(session === null || session === undefined) {
     return NextResponse.json(
       { error: "Unauthorized" },

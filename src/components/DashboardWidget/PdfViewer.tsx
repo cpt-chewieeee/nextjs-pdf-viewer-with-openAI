@@ -14,17 +14,18 @@ import { highlightPlugin, HighlightArea } from '@react-pdf-viewer/highlight';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import { useEffect, useRef, useState } from "react";
-import { Annotation } from "openai/resources/beta/threads.js";
+import { AnnotationDelta } from "openai/resources/beta/threads/messages.mjs";
+
 
 interface PdfViewerProps {
   selectedFile: PdfUpload | null;
   setSelectedFile: (file: PdfUpload | null) => void;
-  annotations: Annotation[];
+  annotations: AnnotationDelta[];
 }
 interface PdfPage {
   page: number;
   content: string;
-  pageContent: any;
+  pageContent: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 
@@ -80,17 +81,17 @@ export default function PdfViewer({ selectedFile, setSelectedFile, annotations }
   const hightlightNotes = () => {
  
 
-    annotations.forEach((item: any) => {
+    annotations.forEach((item: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
       const startIndex = item.start_index;
       const endIndex = item.end_index;
       
        
-      const pageText = pages.map((it: any) => it.content).join(' ');
+      const pageText = pages.map((it: any) => it.content).join(' '); // eslint-disable-line @typescript-eslint/no-explicit-any
 
       const sub = substringWholeWords(pageText, startIndex, endIndex).replace(/\s{2,}/g, " ").split(' ');
      
 
-      const matchConfigs: any = sub.reduce((arr: any, desc: string) => {
+      const matchConfigs: any = sub.reduce((arr: any, desc: string) => { // eslint-disable-line @typescript-eslint/no-explicit-any
 
        
         const x = {
@@ -122,7 +123,7 @@ export default function PdfViewer({ selectedFile, setSelectedFile, annotations }
 
       
       
-      const pageText = content.items.map((item: any) => item.str).join(" ");
+      const pageText = content.items.map((item: any) => item.str).join(" "); // eslint-disable-line @typescript-eslint/no-explicit-any
       text += pageText + "\n";
       newPages.push({
         page: i,

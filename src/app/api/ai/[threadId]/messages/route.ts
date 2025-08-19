@@ -1,8 +1,9 @@
 import openai from "../../../../../../lib/openai";
 
 // Send a new message to a thread
-export async function POST(request: Request, { params }: { params: { threadId: string } }) {
+export async function POST(request: Request, context: { params: Promise<{ threadId: string }>; }) {
   const { content, assistantId, sessionId } = await request.json();
+  const { params } = context;
   const paramResult = await params;
 
   const id = paramResult.threadId;

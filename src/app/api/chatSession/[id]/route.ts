@@ -6,7 +6,7 @@ import { UserSession } from "@/app/types/userSession";
 
 
 // Get all sessions for a user
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }>; }) {
   const session: UserSession | null = await getServerSession(authConfig);
   if(session === null || session === undefined) {
     return NextResponse.json(
@@ -14,7 +14,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       { status: 401 }
     );
   }
-
+  const { params } = context;
   try {
     const userId = session.user.id;
     const paramResults = await params;

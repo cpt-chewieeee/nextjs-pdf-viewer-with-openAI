@@ -11,7 +11,7 @@ import { pinata } from '../../../../lib/pinata';
 
 /* Helper functions */
 const getOrCreateVectorStore = async (assistantId: string) => {
-  const assistant: any = await openai.beta.assistants.retrieve(assistantId);
+  const assistant: any = await openai.beta.assistants.retrieve(assistantId); // eslint-disable-line @typescript-eslint/no-explicit-any
 
   // if the assistant already has a vector store, return it
   if (assistant.tool_resources?.file_search?.vector_store_ids?.length > 0) {

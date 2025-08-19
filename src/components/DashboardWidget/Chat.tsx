@@ -1,15 +1,15 @@
 import { ChatMessage, ChatSession, PdfUpload } from "@prisma/client/edge";
 import { useEffect, useRef, useState } from "react";
-import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport, tool } from 'ai';
+
 import { AssistantStream } from "openai/lib/AssistantStream";
 import { AssistantStreamEvent } from "openai/resources/beta/assistants";
-import { RequiredActionFunctionToolCall } from "openai/resources/beta/threads/runs/runs";
+
 
 import Stt from "./Stt";
-import { TextDelta } from "openai/resources/beta/threads.mjs";
-import { AnnotationDelta } from "openai/resources/beta/threads.js";
+
+import { AnnotationDelta } from "openai/resources/beta/threads/messages.mjs";
 import ChatBubble from "./ChatBubble";
+import { Metadata } from "@/app/types/metadata";
 
 interface ChatMessageType {
   type: "file";
@@ -159,12 +159,14 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
         return { output: '', tool_call_id: toolCall.id };
       })
     );
+
+    console.log('what is this', toolCallOutputs);
     setInputDisabled(true);
     submitActionResult(runId, toolCallOutputs);
   };
-  const submitActionResult = async (runId: any, toolCallOutputs: any) => {
+  const submitActionResult = async (runId: any, toolCallOutputs: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     const response = await fetch(
-      `/api/ai/${selectedFile.threadId}/actions`,
+      `/api/ai/${currentChatSession.threadId}/actions`,
       {
         method: "POST",
         headers: {
@@ -185,8 +187,10 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
     const userMsg: ChatMessage = chatMessages[chatMessages.length - 2];
 
 
-    if(last.metadata !== null && last.metadata !== undefined && last.metadata.annotation !== undefined) {
-      setAnnotations(last.metadata.annotation);
+    if(typeof last.metadata === 'object' && last.metadata !== null && 'annotation' in last.metadata) {  
+      
+      const contxt = last.metadata as unknown as Metadata;
+      setAnnotations(contxt.annotation);  
     }
     if(userMsg !== undefined && userMsg !== null) {
       await fetch(`/api/chatMessage`, {
@@ -230,8 +234,8 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
       };
   
       annotations.forEach((annotation: AnnotationDelta) => {
-
-        update?.metadata?.annotation?.push(annotation);
+        const metadata = update?.metadata as unknown as Metadata;
+        metadata?.annotation?.push(annotation);
    
       });
 
@@ -243,7 +247,7 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
 
     stream.on("textCreated", () => {
 
-      setChatMessages((prev: ChatMessage) => [
+      setChatMessages((prev: any[]) => [ // eslint-disable-line @typescript-eslint/no-explicit-any
         ...prev,
         {
           isReply: true,
@@ -295,7 +299,7 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
     }
 
     try {
-      const response: any = await fetch(
+      const response: any = await fetch( // eslint-disable-line @typescript-eslint/no-explicit-any
         `/api/ai/${session.threadId}/messages`,
         {
           method: "POST",
@@ -306,7 +310,7 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
           }),
         }
       );
-      setChatMessages((prev: ChatMessage) => [
+      setChatMessages((prev: any[]) => [ // eslint-disable-line @typescript-eslint/no-explicit-any
         ...prev,
         {
           isReply: false,
@@ -317,7 +321,7 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
       
      
       const stream = AssistantStream.fromReadableStream(response.body);
-      handleReadableStream(stream, session);
+      handleReadableStream(stream);
       
       setInput('');
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

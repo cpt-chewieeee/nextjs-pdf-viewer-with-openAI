@@ -7,7 +7,7 @@ import ChatHistoryList from "./DashboardWidget/ChatHistoryList";
 import Chat from "./DashboardWidget/Chat";
 import { useState } from "react";
 import { ChatSession, PdfUpload } from "@prisma/client/edge";
-import { AnnotationDelta } from "openai/resources/beta/threads.js";
+import { AnnotationDelta } from "openai/resources/beta/threads/messages.mjs";
 
 
 

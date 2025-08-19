@@ -28,7 +28,7 @@ export const authConfig = {
               email: credentials.email,
               password: await bcrypt.hash(credentials.password, 10),
             },
-          });
+          }) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
         }
 
         const isCorrectPassword = await bcrypt.compare(
@@ -40,9 +40,9 @@ export const authConfig = {
           throw new Error("Invalid credentials");
         }
 
-        return user;
+        return user as any; // eslint-disable-line @typescript-eslint/no-explicit-any
       },
-    })
+    }) 
   ],
   pages: {
     signIn: '/login',

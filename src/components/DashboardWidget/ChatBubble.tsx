@@ -1,5 +1,6 @@
+import { Metadata } from "@/app/types/metadata";
 import { ChatMessage } from "@prisma/client"
-import { AnnotationDelta } from "openai/resources/beta/threads.mjs";
+import { AnnotationDelta } from "openai/resources/beta/threads/messages.mjs";
 import { useEffect, useRef, useState } from "react";
 
 import reactStringReplace from 'react-string-replace';
@@ -47,10 +48,10 @@ export default function ChatBubble({ chatMessage, setAnnotations }: ChatBubblePr
 
 
     let message = chatMessage.content;
-    if(chatMessage.metadata !== null && chatMessage.metadata !== undefined && chatMessage.metadata.annotation !== undefined) {
+    if(typeof chatMessage.metadata === 'object' && chatMessage.metadata !== null && 'annotation' in chatMessage.metadata) {
     
-
-      message = chatMessage.metadata.annotation.reduce((text: string, chat: AnnotationDelta) => {
+      const contxt = chatMessage.metadata as unknown as Metadata;
+      message = contxt.annotation.reduce((text: string, chat: AnnotationDelta) => {
         const source = chat.text;
 
         if(source !== null && source !== undefined && text.indexOf(source) > -1) {
@@ -63,7 +64,7 @@ export default function ChatBubble({ chatMessage, setAnnotations }: ChatBubblePr
           })
         }
         return text;
-      }, message)
+      }, message) as string;
     }
    
     return (<span>{message}</span>);
@@ -102,7 +103,7 @@ export default function ChatBubble({ chatMessage, setAnnotations }: ChatBubblePr
           {
             chatMessage.createdAt !== null ?
             (
-              <div className="text-xs text-gray-400 block text-right mt-1">{chatMessage.createdAt}</div>
+              <div className="text-xs text-gray-400 block text-right mt-1">{chatMessage.createdAt.toString()}</div>
             ) : null
           }
         </div>
