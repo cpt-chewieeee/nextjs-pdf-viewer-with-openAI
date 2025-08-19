@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import PdfListCard from "./PdfListCard";
-import { PdfUpload } from "@prisma/client/edge";
+import { PdfUpload, ChatSession } from "@prisma/client/edge";
 
 
 
 
 interface PdfListProps {
-  setSelectedFile: (file: PdfUpload | null) => void
+  setSelectedFile: (file: PdfUpload | null) => void;
+  setCurrentChatSession: (chat: ChatSession | null) => void;
 }
-export default function PdfList({ setSelectedFile }: PdfListProps) {
+export default function PdfList({ setSelectedFile, setCurrentChatSession }: PdfListProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [allFiles, setAllFiles] = useState<PdfUpload[]>([]);
 
@@ -120,7 +121,7 @@ export default function PdfList({ setSelectedFile }: PdfListProps) {
         {
         allFiles.map((item: PdfUpload, index: number) => {
           return (
-            <PdfListCard key={index} file={item} setSelectedFile={setSelectedFile}/>
+            <PdfListCard key={index} file={item} setSelectedFile={setSelectedFile} setCurrentChatSession={setCurrentChatSession}/>
           )
         })
       }

@@ -110,6 +110,7 @@ export default function Chat({ currentChatSession, setCurrentChatSession, select
     if (!currentChatSession) {
       return;
     }
+    console.log('what is this sessin', currentChatSession);
     
     const resp = await fetch(`/api/chatMessage/${currentChatSession.id}`);
     

@@ -35,7 +35,7 @@ export default function DashboardLayout() {
           <div className="pt-20 h-full">
             <AppLayout>
               <div className="grid grid-cols-6 grid-rows-6 gap-1 h-full">
-                  <div className="row-span-6"><PdfList setSelectedFile={setSelectedFile}/></div>
+                  <div className="row-span-6"><PdfList setSelectedFile={setSelectedFile} setCurrentChatSession={setCurrentChatSession}/></div>
                   <div className="col-span-3 row-span-6"><PdfViewer annotations={annotations} selectedFile={selectedFile} setSelectedFile={setSelectedFile}/></div>
                   <div className="col-span-2 row-span-2 col-start-5"><ChatHistoryList selectedFile={selectedFile} setCurrentChatSession={setCurrentChatSession} currentChatSession={currentChatSession} /></div>
                   <div className="col-span-2 row-span-4 col-start-5 row-start-3"><Chat setAnnotations={setAnnotations} selectedFile={selectedFile} currentChatSession={currentChatSession} setCurrentChatSession={setCurrentChatSession}/></div>

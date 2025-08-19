@@ -1,11 +1,12 @@
-import { PdfUpload } from "@prisma/client/edge";
+import { PdfUpload, ChatSession } from "@prisma/client/edge";
 
 
 
 
 interface FileCardProps {
-  file: PdfUpload,
-  setSelectedFile: (file: PdfUpload | null) => void
+  file: PdfUpload;
+  setSelectedFile: (file: PdfUpload | null) => void;
+  setCurrentChatSession: (chat: ChatSession | null) => void;
 }
 function ConvertToMb(bytes: number): string {
   if(bytes < 0) {
@@ -15,11 +16,15 @@ function ConvertToMb(bytes: number): string {
     return `${mb.toFixed(2)}MB`
   }
 }
-export default function PdfListCard({ file, setSelectedFile }: FileCardProps) {
+export default function PdfListCard({ file, setSelectedFile, setCurrentChatSession}: FileCardProps) {
 
 
   return (
-    <div className="max-w-sm rounded border border-gray-200 shadow hover:shadow-lg transition-shadow p-4 mt-1" onClick={() => setSelectedFile(file)}>
+    <div className="max-w-sm rounded border border-gray-200 shadow hover:shadow-lg transition-shadow p-4 mt-1" onClick={() => {
+      setCurrentChatSession(null);
+      setSelectedFile(file);
+
+    }}>
       <div className="flex items-center justify-between mb-2">
         <div className="text-lg font-semibold text-white-800 truncate relative group">
           <h3>
@@ -39,7 +44,7 @@ export default function PdfListCard({ file, setSelectedFile }: FileCardProps) {
         <button
           disabled
           onClick={() => console.log("Delete", file.filename)}
-          className="text-gray-400 hover:text-red-600"
+          className="text-gray-400 hover:text-red-600  disabled:text-gray-200 cursor-not-allowed"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
